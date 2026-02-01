@@ -115,18 +115,20 @@ def init_card_stack_router(
     # -----------------------------------------------------------------
 
     @router
-    def save_width(card_width: int) -> None:
+    def save_width(card_width: int) -> Any:
         """Save card stack width to server state."""
         state = state_getter()
         card_stack_save_width(state, card_width, config)
         state_setter(state)
+        return ""
 
     @router
-    def save_scale(card_scale: int) -> None:
+    def save_scale(card_scale: int) -> Any:
         """Save card stack scale to server state."""
         state = state_getter()
         card_stack_save_scale(state, card_scale, config)
         state_setter(state)
+        return ""
 
     # -----------------------------------------------------------------
     # Build URL bundle from registered routes
