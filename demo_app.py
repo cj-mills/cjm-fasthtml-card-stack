@@ -111,7 +111,8 @@ def main():
     from cjm_fasthtml_card_stack.components.progress import render_progress_indicator
     from cjm_fasthtml_card_stack.js.core import generate_card_stack_js
     from cjm_fasthtml_card_stack.keyboard.actions import (
-        create_card_stack_focus_zone, create_card_stack_nav_actions
+        create_card_stack_focus_zone, create_card_stack_nav_actions,
+        build_card_stack_url_map, render_card_stack_action_buttons
     )
     from cjm_fasthtml_card_stack.routes.router import init_card_stack_router
 
@@ -312,11 +313,8 @@ def main():
         nav_actions = create_card_stack_nav_actions(zone.id, btn_ids, config)
         manager = ZoneManager(zones=(zone,), actions=nav_actions)
 
-        # Build maps for all HTMX-triggered actions
-        url_map = {
-            btn_ids.nav_up: urls.nav_up,
-            btn_ids.nav_down: urls.nav_down,
-        }
+        # Build maps for all navigation buttons (nav up/down + page jump + first/last)
+        url_map = build_card_stack_url_map(btn_ids, urls)
         target_map = {btn_id: f"#{ids.card_stack}" for btn_id in url_map}
         swap_map = {btn_id: "none" for btn_id in url_map}
         include_map = {btn_id: f"#{ids.focused_index_input}" for btn_id in url_map}
@@ -524,6 +522,9 @@ def main():
                 kb_system.hidden_inputs,
                 kb_system.action_buttons,
 
+                # Hidden buttons for JS-callback-triggered actions (page jump, first/last)
+                render_card_stack_action_buttons(basic_btn_ids, basic_urls, basic_ids),
+
                 # Card stack JS
                 js_script,
 
@@ -623,6 +624,9 @@ def main():
                 kb_system.script,
                 kb_system.hidden_inputs,
                 kb_system.action_buttons,
+
+                # Hidden buttons for JS-callback-triggered actions (page jump, first/last)
+                render_card_stack_action_buttons(bottom_btn_ids, bottom_urls, bottom_ids),
 
                 # Card stack JS
                 js_script,
