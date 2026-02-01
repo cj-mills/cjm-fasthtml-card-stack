@@ -101,7 +101,13 @@ def _generate_scale_mgmt_js(
             }}, 500);
         }}
 
+        function _applyScaleCssProperty(val) {{
+            const cs = document.getElementById('{ids.card_stack}');
+            if (cs) cs.style.setProperty('--card-stack-scale', val);
+        }}
+
         ns.updateScale = function(value) {{
+            _applyScaleCssProperty(value);
             try {{ localStorage.setItem(_SCALE_KEY, value); }} catch (e) {{}}
             const slider = document.getElementById('{ids.scale_slider}');
             if (slider && parseInt(slider.value) !== parseInt(value)) slider.value = value;
@@ -111,6 +117,7 @@ def _generate_scale_mgmt_js(
         ns.applyScale = function() {{
             let val = {DEFAULT_CARD_SCALE};
             try {{ const s = localStorage.getItem(_SCALE_KEY); if (s) val = parseInt(s); }} catch (e) {{}}
+            _applyScaleCssProperty(val);
             const slider = document.getElementById('{ids.scale_slider}');
             if (slider) slider.value = val;
         }};
