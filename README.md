@@ -64,36 +64,36 @@ graph LR
     components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> helpers_focus
+    components_viewport --> components_states
     components_viewport --> core_config
     components_viewport --> core_models
     components_viewport --> core_constants
+    components_viewport --> helpers_focus
     components_viewport --> core_html_ids
-    components_viewport --> components_states
     helpers_focus --> core_html_ids
-    js_core --> core_button_ids
     js_core --> core_constants
+    js_core --> core_button_ids
     js_core --> core_config
-    js_core --> core_models
-    js_core --> js_scroll
-    js_core --> core_html_ids
-    js_core --> js_viewport
     js_core --> js_navigation
+    js_core --> js_viewport
+    js_core --> core_html_ids
+    js_core --> js_scroll
+    js_core --> core_models
     js_navigation --> core_button_ids
-    js_scroll --> core_button_ids
     js_scroll --> core_constants
     js_scroll --> core_html_ids
+    js_scroll --> core_button_ids
     js_viewport --> core_html_ids
+    keyboard_actions --> core_html_ids
     keyboard_actions --> core_config
     keyboard_actions --> core_button_ids
     keyboard_actions --> js_core
-    keyboard_actions --> core_html_ids
-    routes_handlers --> components_progress
-    routes_handlers --> core_config
-    routes_handlers --> core_models
     routes_handlers --> helpers_focus
     routes_handlers --> components_viewport
     routes_handlers --> core_html_ids
+    routes_handlers --> core_config
+    routes_handlers --> core_models
+    routes_handlers --> components_progress
     routes_router --> core_config
     routes_router --> core_models
     routes_router --> routes_handlers
@@ -1010,6 +1010,7 @@ def render_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Any:  # Viewport component with 3-section layout
     "Render the card stack viewport with 3-section CSS Grid layout."
 ```

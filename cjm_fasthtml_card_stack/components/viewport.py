@@ -8,7 +8,7 @@ __all__ = ['render_slot_card', 'render_all_slots_oob', 'render_viewport']
 # %% ../../nbs/components/viewport.ipynb #v1000003
 from typing import Any, Callable, List, Optional
 
-from fasthtml.common import Div, Script, A
+from fasthtml.common import Div, Script, A, Hidden
 
 # DaisyUI utilities
 from cjm_fasthtml_daisyui.utilities.semantic_colors import ring_dui
@@ -232,6 +232,7 @@ def render_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Any:  # Viewport component with 3-section layout
     """Render the card stack viewport with 3-section CSS Grid layout."""
     total_items = len(card_items)
@@ -292,6 +293,13 @@ def render_viewport(
 
     outer_cls = combine_classes(w.full, p.x(2), p.y(2), overflow.hidden)
 
+    # Hidden input for focused index (needed for keyboard nav hx-include and OOB updates)
+    focused_input = Hidden(
+        id=ids.focused_index_input,
+        name=form_input_name,
+        value=str(state.focused_index),
+    )
+
     return Div(
         Div(
             before_section,
@@ -302,6 +310,7 @@ def render_viewport(
             style=inner_style
         ),
         _render_mode_sync_script(state.active_mode),
+        focused_input,
         id=ids.card_stack,
         cls=outer_cls,
         style="opacity: 0; transition: opacity 150ms ease-in",
