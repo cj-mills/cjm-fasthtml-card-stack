@@ -13,47 +13,50 @@ def generate_viewport_height_js(
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
     container_id: str = "",  # Consumer's parent container ID (empty = use card stack parent)
 ) -> str:  # JavaScript code fragment for viewport height calculation
-    """Generate JS for dynamic viewport height calculation."""
-    # If no container_id, use the card stack's parent element
-    container_selector = (
-        f"document.getElementById('{container_id}')"
-        if container_id
-        else f"document.getElementById('{ids.card_stack}').parentElement"
-    )
+    """Generate JS for dynamic viewport height calculation.
+    
+    Uses the browser's layout engine to measure the space consumed by sibling
+    elements rather than summing individual heights. This naturally handles
+    margin collapsing regardless of the container's display type.
+    
+    Strategy: temporarily collapse the card stack to 0 height, measure how
+    much vertical space the remaining content occupies, then set the card
+    stack height to fill the remaining viewport space.
+    """
+    # Build container resolution logic — guarded against null for SPA navigation
+    if container_id:
+        container_resolution = f"""
+            const container = document.getElementById('{container_id}');"""
+    else:
+        container_resolution = f"""
+            const _csEl = document.getElementById('{ids.card_stack}');
+            if (!_csEl) return 400;
+            const container = _csEl.parentElement;"""
 
     return f"""
         // === Viewport Height Calculation ===
-
-        function isNonVisualElement(el) {{
-            if (!el || el.nodeType !== Node.ELEMENT_NODE) return true;
-            const tag = el.tagName;
-            if (tag === 'SCRIPT' || tag === 'STYLE') return true;
-            if (tag === 'INPUT' && el.type === 'hidden') return true;
-            const styles = getComputedStyle(el);
-            if (styles.display === 'none') return true;
-            return false;
-        }}
-
-        function getElementOuterHeight(el) {{
-            if (isNonVisualElement(el)) return 0;
-            const styles = getComputedStyle(el);
-            const marginTop = parseFloat(styles.marginTop) || 0;
-            const marginBottom = parseFloat(styles.marginBottom) || 0;
-            return el.getBoundingClientRect().height + marginTop + marginBottom;
-        }}
 
         function calculateSpaceBelowContainer(container) {{
             let spaceUsedBelow = 0;
             let currentElement = container;
             let parent = container.parentElement;
-            while (parent && parent !== document.body && parent !== document.documentElement) {{
+            while (parent && parent !== document.documentElement) {{
                 const parentStyles = getComputedStyle(parent);
                 spaceUsedBelow += parseFloat(parentStyles.paddingBottom) || 0;
+                spaceUsedBelow += parseFloat(parentStyles.borderBottomWidth) || 0;
                 let foundCurrent = false;
                 for (const sibling of parent.children) {{
                     if (sibling === currentElement) {{ foundCurrent = true; continue; }}
                     if (!foundCurrent) continue;
-                    spaceUsedBelow += getElementOuterHeight(sibling);
+                    if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
+                    const tag = sibling.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+                    if (tag === 'INPUT' && sibling.type === 'hidden') continue;
+                    const s = getComputedStyle(sibling);
+                    if (s.display === 'none') continue;
+                    const mt = parseFloat(s.marginTop) || 0;
+                    const mb = parseFloat(s.marginBottom) || 0;
+                    spaceUsedBelow += sibling.getBoundingClientRect().height + mt + mb;
                 }}
                 currentElement = parent;
                 parent = parent.parentElement;
@@ -61,33 +64,40 @@ def generate_viewport_height_js(
             return spaceUsedBelow;
         }}
 
-        function calculateSiblingHeight(container, excludeId) {{
-            let height = 0;
-            for (const child of container.children) {{
-                if (child.id === excludeId) continue;
-                height += getElementOuterHeight(child);
-            }}
-            return height;
-        }}
-
         function calculateAndSetViewportHeight() {{
-            const container = {container_selector};
+            {container_resolution}
             const cardStack = document.getElementById('{ids.card_stack}');
             const cardStackInner = document.getElementById('{ids.card_stack_inner}');
             if (!container || !cardStack) return 400;
 
+            // Temporarily collapse the card stack to measure sibling space.
+            // Save current values to restore if something goes wrong.
+            const prevHeight = cardStack.style.height;
+            const prevMinHeight = cardStack.style.minHeight;
+            const prevMaxHeight = cardStack.style.maxHeight;
+            
+            cardStack.style.height = '0px';
+            cardStack.style.minHeight = '0px';
+            cardStack.style.maxHeight = '0px';
+
+            // Now measure: with the card stack collapsed, the container's
+            // height is driven entirely by the sibling content + padding.
+            // The browser handles margin collapsing for us.
+            const containerRect = container.getBoundingClientRect();
+            const siblingSpace = containerRect.height;
+
+            // Restore immediately (before any repaint)
+            cardStack.style.height = prevHeight;
+            cardStack.style.minHeight = prevMinHeight;
+            cardStack.style.maxHeight = prevMaxHeight;
+
             const windowHeight = window.innerHeight;
-            const containerTop = container.getBoundingClientRect().top;
-            const containerStyles = getComputedStyle(container);
-            const containerPadTop = parseFloat(containerStyles.paddingTop) || 0;
-            const containerPadBot = parseFloat(containerStyles.paddingBottom) || 0;
-            const siblingHeight = calculateSiblingHeight(container, '{ids.card_stack}');
+            const containerTop = containerRect.top;
             const spaceBelow = calculateSpaceBelowContainer(container);
 
-            const viewportHeight = Math.max(200,
-                windowHeight - containerTop - containerPadTop - containerPadBot
-                - siblingHeight - spaceBelow
-            );
+            const viewportHeight = Math.floor(Math.max(200,
+                windowHeight - containerTop - siblingSpace - spaceBelow
+            ));
 
             cardStack.style.height = viewportHeight + 'px';
             cardStack.style.maxHeight = viewportHeight + 'px';
