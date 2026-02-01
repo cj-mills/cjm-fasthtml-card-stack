@@ -122,4 +122,20 @@ def create_card_stack_nav_actions(
             description="Wider",
             hint_group="View",
         ),
+
+        # --- Scale adjustment (available in any mode) ---
+        KeyAction(
+            key="-",
+            js_callback=global_callback_name(prefix, "decreaseScale"),
+            zone_ids=zone_ids,
+            description="Smaller",
+            hint_group="View",
+        ),
+        KeyAction(
+            key="=",
+            js_callback=global_callback_name(prefix, "increaseScale"),
+            zone_ids=zone_ids,
+            description="Larger",
+            hint_group="View",
+        ),
     )

@@ -57,3 +57,13 @@ class CardStackButtonIds:
     def width_widen(self) -> str:  # Increase viewport width
         """Widen viewport button."""
         return f"{self.prefix}-btn-width-widen"
+
+    @property
+    def scale_decrease(self) -> str:  # Decrease content scale
+        """Decrease scale button."""
+        return f"{self.prefix}-btn-scale-decrease"
+
+    @property
+    def scale_increase(self) -> str:  # Increase content scale
+        """Increase scale button."""
+        return f"{self.prefix}-btn-scale-increase"

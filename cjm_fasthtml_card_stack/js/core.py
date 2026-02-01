@@ -114,6 +114,18 @@ def _generate_scale_mgmt_js(
             _saveScaleToServer(value);
         }};
 
+        ns.decreaseScale = function() {{
+            const slider = document.getElementById('{ids.scale_slider}');
+            const current = slider ? parseInt(slider.value) : {DEFAULT_CARD_SCALE};
+            ns.updateScale(Math.max({config.card_scale_min}, current - {config.card_scale_step}));
+        }};
+
+        ns.increaseScale = function() {{
+            const slider = document.getElementById('{ids.scale_slider}');
+            const current = slider ? parseInt(slider.value) : {DEFAULT_CARD_SCALE};
+            ns.updateScale(Math.min({config.card_scale_max}, current + {config.card_scale_step}));
+        }};
+
         ns.applyScale = function() {{
             let val = {DEFAULT_CARD_SCALE};
             try {{ const s = localStorage.getItem(_SCALE_KEY); if (s) val = parseInt(s); }} catch (e) {{}}
@@ -231,6 +243,8 @@ _GLOBAL_CALLBACKS = (
     "jumpToLastItem",
     "decreaseWidth",
     "increaseWidth",
+    "decreaseScale",
+    "increaseScale",
 )
 
 def global_callback_name(
