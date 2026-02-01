@@ -3,11 +3,11 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "cjm-fasthtml-card-stack"
+name="cjm-fasthtml-card-stack"
 dynamic = ["version"]
 description = "A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python=">=3.12"
 license = {text = "Apache-2.0"}
 authors = [{name = "Christian J. Mills", email = "9126128+cj-mills@users.noreply.github.com"}]
 keywords = ['nbdev', 'jupyter', 'notebook', 'python']
