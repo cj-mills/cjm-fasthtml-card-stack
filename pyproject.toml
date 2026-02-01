@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cjm-fasthtml-card-stack"
+dynamic = ["version"]
+description = "A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates."
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "Apache-2.0"}
+authors = [{name = "Christian J. Mills", email = "9126128+cj-mills@users.noreply.github.com"}]
+keywords = ['nbdev', 'jupyter', 'notebook', 'python']
+classifiers = ["Natural Language :: English", "Intended Audience :: Developers", "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "Programming Language :: Python :: 3 :: Only"]
+dependencies = ['python-fasthtml', 'cjm-fasthtml-tailwind', 'cjm-fasthtml-daisyui', 'cjm-fasthtml-keyboard-navigation']
+
+[project.urls]
+Repository = "https://github.com/cj-mills/cjm-fasthtml-card-stack"
+Documentation = "https://cj-mills.github.io/cjm-fasthtml-card-stack"
+
+[project.entry-points.nbdev]
+cjm_fasthtml_card_stack = "cjm_fasthtml_card_stack._modidx:d"
+
+[tool.setuptools.dynamic]
+version = {attr = "cjm_fasthtml_card_stack.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["cjm_fasthtml_card_stack"]
+
+[tool.nbdev]
+custom_sidebar = false

@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "cjm-fasthtml-card-stack"
+  site-url: "https://cj-mills.github.io/cjm-fasthtml-card-stack"
+  description: "A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates."
+  repo-branch: main
+  repo-url: "https://github.com/cj-mills/cjm-fasthtml-card-stack"
