@@ -42,7 +42,7 @@ def render_card(item, context: CardRenderContext):
         ),
         cls=combine_classes(
             card,
-            bg_dui.base_100 if is_focused else bg_dui.base_200,
+            bg_dui.base_100,# if is_focused else bg_dui.base_200,
             w.full,
         ),
     )

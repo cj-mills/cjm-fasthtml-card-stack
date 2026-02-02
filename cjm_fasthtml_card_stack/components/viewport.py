@@ -11,11 +11,11 @@ from typing import Any, Callable, List, Optional
 from fasthtml.common import Div, Script, A, Hidden
 
 # DaisyUI utilities
-from cjm_fasthtml_daisyui.utilities.semantic_colors import ring_dui
+from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui
 from cjm_fasthtml_daisyui.utilities.border_radius import border_radius
 
 # Tailwind utilities
-from cjm_fasthtml_tailwind.utilities.effects import ring
+from cjm_fasthtml_tailwind.utilities.effects import shadow
 from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
     flex_display, flex_direction, justify, items, gap, grid_display
 )
@@ -110,9 +110,9 @@ def render_slot_card(
         )
         content = render_card(card_items[item_index], context)
 
-    # Focus ring styling for focused slot
+    # Focus shadow styling for focused slot
     focus_cls = combine_classes(
-        ring(3), ring_dui.primary, border_radius.box
+        shadow.lg, shadow_dui.primary, border_radius.box
     ) if is_focused else ""
 
     # Mode sync script in focused slot OOB updates
@@ -195,7 +195,7 @@ def render_all_slots_oob(
     focused_section = Div(
         focused_card, mode_sync,
         id=ids.viewport_section_focused,
-        cls=combine_classes(flex_display, justify.center, items.center, w.full),
+        cls=combine_classes(flex_display, justify.center, items.center, w.full, p.x(2), p.b(4)),
         hx_swap_oob="innerHTML"
     )
 
@@ -276,7 +276,7 @@ def render_viewport(
     focused_section = Div(
         focused_card,
         id=ids.viewport_section_focused,
-        cls=combine_classes(flex_display, justify.center, items.center, w.full)
+        cls=combine_classes(flex_display, justify.center, items.center, w.full, p.x(2), p.b(4))
     )
 
     after_section = Div(
