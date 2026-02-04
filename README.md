@@ -60,45 +60,45 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_config
     components_controls --> core_html_ids
+    components_controls --> core_config
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_config
-    components_viewport --> core_html_ids
-    components_viewport --> components_states
-    components_viewport --> core_constants
-    components_viewport --> helpers_focus
     components_viewport --> core_models
+    components_viewport --> core_html_ids
+    components_viewport --> core_config
+    components_viewport --> core_constants
+    components_viewport --> components_states
+    components_viewport --> helpers_focus
     helpers_focus --> core_html_ids
-    js_core --> core_constants
-    js_core --> core_config
-    js_core --> js_navigation
-    js_core --> js_scroll
-    js_core --> core_html_ids
-    js_core --> js_viewport
-    js_core --> core_button_ids
     js_core --> core_models
+    js_core --> core_html_ids
+    js_core --> core_button_ids
+    js_core --> js_viewport
+    js_core --> core_config
+    js_core --> core_constants
+    js_core --> js_scroll
+    js_core --> js_navigation
     js_navigation --> core_button_ids
     js_scroll --> core_html_ids
-    js_scroll --> core_constants
     js_scroll --> core_button_ids
+    js_scroll --> core_constants
     js_viewport --> core_html_ids
-    keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
     keyboard_actions --> core_button_ids
-    keyboard_actions --> core_models
+    keyboard_actions --> core_config
     keyboard_actions --> js_core
-    routes_handlers --> components_viewport
-    routes_handlers --> core_config
-    routes_handlers --> core_html_ids
+    keyboard_actions --> core_models
     routes_handlers --> core_models
+    routes_handlers --> core_html_ids
+    routes_handlers --> core_config
+    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
     routes_handlers --> components_progress
+    routes_router --> core_models
+    routes_router --> core_html_ids
     routes_router --> core_config
     routes_router --> routes_handlers
-    routes_router --> core_html_ids
-    routes_router --> core_models
 ```
 
 *39 cross-module dependencies detected*
@@ -391,7 +391,7 @@ def auto_count_storage_key(
 #### Variables
 
 ``` python
-SCROLL_THRESHOLD: int = 50
+SCROLL_THRESHOLD: int = 1
 NAVIGATION_COOLDOWN: int = 100
 DEFAULT_VISIBLE_COUNT: int = 3
 DEFAULT_CARD_WIDTH: int = 80

@@ -14,7 +14,7 @@ from typing import Literal
 CardRole = Literal["focused", "context"]
 
 # %% ../../nbs/core/constants.ipynb #e1000008
-SCROLL_THRESHOLD: int = 50      # Pixels of wheel delta to trigger navigation
+SCROLL_THRESHOLD: int = 1      # Pixels of wheel delta to trigger navigation
 NAVIGATION_COOLDOWN: int = 100  # Milliseconds between scroll-triggered navigations
 
 # %% ../../nbs/core/constants.ipynb #e1000011

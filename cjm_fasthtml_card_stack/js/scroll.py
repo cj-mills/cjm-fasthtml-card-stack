@@ -52,21 +52,33 @@ def generate_scroll_nav_js(
                 {mode_guard}
                 evt.preventDefault();
 
-                const now = Date.now();
-                if (now - _scrollState.lastNavTime > _NAV_COOLDOWN * 2) {{
+                // Normalize deltaY based on deltaMode
+                let deltaY = evt.deltaY;
+                if (evt.deltaMode === 1) deltaY *= 32;      // DOM_DELTA_LINE
+                else if (evt.deltaMode === 2) deltaY *= 800; // DOM_DELTA_PAGE
+
+                // Use event creation time for cooldown (not Date.now() wall time).
+                // Batched events from main-thread blockage share the same timeStamp,
+                // so only the first in a batch passes cooldown.
+                const eventTime = evt.timeStamp;
+
+                if (eventTime - _scrollState.lastNavTime > _NAV_COOLDOWN * 2) {{
                     _scrollState.accumulatedDelta = 0;
                 }}
-                _scrollState.accumulatedDelta += evt.deltaY;
+                _scrollState.accumulatedDelta += deltaY;
 
-                if (Math.abs(_scrollState.accumulatedDelta) >= _SCROLL_THRESHOLD) {{
-                    if (now - _scrollState.lastNavTime >= _NAV_COOLDOWN) {{
-                        const btnId = _scrollState.accumulatedDelta > 0
-                            ? '{button_ids.nav_down}' : '{button_ids.nav_up}';
-                        _scrollState.accumulatedDelta = 0;
-                        _scrollState.lastNavTime = now;
-                        const btn = document.getElementById(btnId);
-                        if (btn) btn.click();
-                    }}
+                if (Math.abs(_scrollState.accumulatedDelta) < _SCROLL_THRESHOLD) return;
+
+                if (eventTime - _scrollState.lastNavTime >= _NAV_COOLDOWN) {{
+                    const btnId = _scrollState.accumulatedDelta > 0
+                        ? '{button_ids.nav_down}' : '{button_ids.nav_up}';
+                    _scrollState.accumulatedDelta = 0;
+                    _scrollState.lastNavTime = eventTime;
+                    const btn = document.getElementById(btnId);
+                    if (btn) btn.click();
+                }} else {{
+                    // Discard — batched event from main-thread blockage
+                    _scrollState.accumulatedDelta = 0;
                 }}
             }}, {{ passive: false }});
         }}
