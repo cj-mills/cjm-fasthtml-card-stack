@@ -4,7 +4,8 @@
 
 # %% auto #0
 __all__ = ['CardRole', 'SCROLL_THRESHOLD', 'NAVIGATION_COOLDOWN', 'DEFAULT_VISIBLE_COUNT', 'DEFAULT_CARD_WIDTH',
-           'DEFAULT_CARD_SCALE', 'width_storage_key', 'scale_storage_key', 'card_count_storage_key']
+           'DEFAULT_CARD_SCALE', 'width_storage_key', 'scale_storage_key', 'card_count_storage_key',
+           'auto_count_storage_key']
 
 # %% ../../nbs/core/constants.ipynb #e1000003
 from typing import Literal
@@ -34,6 +35,12 @@ def card_count_storage_key(
 ) -> str:  # localStorage key for card count
     """Generate localStorage key for card count."""
     return f"{prefix}-card-count"
+
+def auto_count_storage_key(
+    prefix: str  # Card stack instance prefix
+) -> str:  # localStorage key for auto card count mode
+    """Generate localStorage key for auto card count mode."""
+    return f"{prefix}-card-count-auto"
 
 # %% ../../nbs/core/constants.ipynb #e1000014
 DEFAULT_VISIBLE_COUNT: int = 3  # Default number of cards visible in viewport

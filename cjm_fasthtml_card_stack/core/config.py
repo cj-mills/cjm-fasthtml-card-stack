@@ -32,6 +32,7 @@ class CardStackConfig:
 
     # Card count selector options
     visible_count_options: Tuple[int, ...] = (1, 3, 5, 7, 9)  # Choices for card count dropdown
+    auto_visible_count: bool = True  # Whether "Auto" option appears in card count dropdown
 
     # Width slider bounds
     card_width_min: int = 30    # Width slider minimum (rem)

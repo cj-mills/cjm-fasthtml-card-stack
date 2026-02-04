@@ -16,6 +16,7 @@ from ..core.button_ids import CardStackButtonIds
 from ..core.models import CardStackUrls, CardStackState
 from cjm_fasthtml_card_stack.core.constants import (
     width_storage_key, scale_storage_key, card_count_storage_key,
+    auto_count_storage_key,
     DEFAULT_CARD_WIDTH, DEFAULT_CARD_SCALE, DEFAULT_VISIBLE_COUNT,
 )
 from .viewport import generate_viewport_height_js
@@ -53,6 +54,7 @@ def _generate_width_mgmt_js(
             const slider = document.getElementById('{ids.width_slider}');
             if (slider && parseInt(slider.value) !== parseInt(value)) slider.value = value;
             _saveWidthToServer(value);
+            if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
         }};
 
         ns.decreaseWidth = function() {{
@@ -112,6 +114,7 @@ def _generate_scale_mgmt_js(
             const slider = document.getElementById('{ids.scale_slider}');
             if (slider && parseInt(slider.value) !== parseInt(value)) slider.value = value;
             _saveScaleToServer(value);
+            if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
         }};
 
         ns.decreaseScale = function() {{
@@ -143,11 +146,17 @@ def _generate_card_count_mgmt_js(
 ) -> str:  # JS code fragment for card count management
     """Generate JS for card count selector management."""
     storage_key = card_count_storage_key(config.prefix)
+    auto_key = auto_count_storage_key(config.prefix)
     valid_counts = ', '.join(str(c) for c in config.visible_count_options)
     return f"""
         // === Card Count Management ===
         const _COUNT_KEY = '{storage_key}';
+        const _AUTO_KEY = '{auto_key}';
         const _VALID_COUNTS = [{valid_counts}];
+
+        function _isAutoMode() {{
+            try {{ return localStorage.getItem(_AUTO_KEY) === 'true'; }} catch (e) {{ return false; }}
+        }}
 
         function _getStoredCount() {{
             try {{
@@ -172,12 +181,185 @@ def _generate_card_count_mgmt_js(
             }}
         }};
 
+        ns._autoUpdateCount = function(count) {{
+            // Like updateCardCount but bypasses _VALID_COUNTS validation.
+            // Used by auto-adjustment which can set any count.
+            const c = Math.max(1, Math.round(count));
+            const cardStack = document.getElementById('{ids.card_stack}');
+            if (cardStack) cardStack.dataset.visibleCount = c;
+            if ('{urls.update_viewport}') {{
+                htmx.ajax('POST', '{urls.update_viewport}', {{
+                    target: '#' + '{ids.card_stack}',
+                    swap: 'none',
+                    values: {{ visible_count: c }}
+                }});
+            }}
+        }};
+
+        ns.handleCountChange = function(value) {{
+            // Entry point for dropdown onchange — handles both "auto" and numeric values.
+            if (value === 'auto') {{
+                try {{ localStorage.setItem(_AUTO_KEY, 'true'); }} catch (e) {{}}
+                if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
+            }} else {{
+                try {{ localStorage.removeItem(_AUTO_KEY); }} catch (e) {{}}
+                ns.updateCardCount(parseInt(value));
+            }}
+        }};
+
         function _syncCountDropdown() {{
             const sel = document.getElementById('{ids.card_count_select}');
             if (!sel) return;
-            const stored = _getStoredCount();
-            if (parseInt(sel.value) !== stored) sel.value = stored;
+            if (_isAutoMode()) {{
+                if (sel.value !== 'auto') sel.value = 'auto';
+            }} else {{
+                const stored = _getStoredCount();
+                if (parseInt(sel.value) !== stored) sel.value = stored;
+            }}
         }}
+    """
+
+# %% ../../nbs/js/core.ipynb #c1jcaj0lnav
+def _generate_auto_adjust_js(
+    ids: CardStackHtmlIds,  # HTML IDs for this instance
+    config: CardStackConfig,  # Config for auto mode check
+    urls: CardStackUrls,  # URL bundle (update_viewport)
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
+) -> str:  # JS code fragment for auto visible count adjustment
+    """Generate JS for automatic visible count adjustment based on overflow detection."""
+    js_focus_pos = "null" if focus_position is None else str(focus_position)
+    return f"""
+        // === Auto Visible Count Adjustment ===
+        let _autoAdjusting = false;
+        let _autoAdjustTimer = null;
+        const _AUTO_FOCUS_POS = {js_focus_pos};
+        const _AUTO_STEP = (_AUTO_FOCUS_POS === null) ? 2 : 1;
+
+        function _getAutoCurrentCount() {{
+            const cs = document.getElementById('{ids.card_stack}');
+            return cs ? parseInt(cs.dataset.visibleCount || '{DEFAULT_VISIBLE_COUNT}') : {DEFAULT_VISIBLE_COUNT};
+        }}
+
+        function _getAutoTotalItems() {{
+            const cs = document.getElementById('{ids.card_stack}');
+            return cs ? parseInt(cs.dataset.totalItems || '0') : 0;
+        }}
+
+        function _getAutoSectionOverflow() {{
+            // Returns max overflow (px) across relevant sections.
+            const before = document.getElementById('{ids.viewport_section_before}');
+            const after = document.getElementById('{ids.viewport_section_after}');
+            let maxOverflow = 0;
+
+            const checkBefore = (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS > 0 || _AUTO_FOCUS_POS < 0);
+            const checkAfter = (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS >= 0);
+
+            if (checkBefore && before) {{
+                const o = before.scrollHeight - before.clientHeight;
+                if (o > maxOverflow) maxOverflow = o;
+            }}
+            if (checkAfter && after) {{
+                const o = after.scrollHeight - after.clientHeight;
+                if (o > maxOverflow) maxOverflow = o;
+            }}
+            return maxOverflow;
+        }}
+
+        function _getAutoAvgCardHeight() {{
+            // Average height of rendered viewport-slot elements.
+            const cs = document.getElementById('{ids.card_stack}');
+            if (!cs) return 100;
+            const slots = cs.querySelectorAll('.viewport-slot');
+            if (slots.length === 0) return 100;
+            let total = 0;
+            for (const s of slots) total += s.getBoundingClientRect().height;
+            return total / slots.length;
+        }}
+
+        function _getAutoGapPx() {{
+            // Read computed gap from the before section (or after).
+            const section = document.getElementById('{ids.viewport_section_before}')
+                         || document.getElementById('{ids.viewport_section_after}');
+            if (!section) return 16;
+            return parseFloat(getComputedStyle(section).gap) || 16;
+        }}
+
+        function _getAutoRemainingSpace() {{
+            // Measure remaining space in relevant sections (no overflow case).
+            const before = document.getElementById('{ids.viewport_section_before}');
+            const after = document.getElementById('{ids.viewport_section_after}');
+            let space = 0;
+
+            if (before && before.children.length > 0 &&
+                (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS > 0 || _AUTO_FOCUS_POS < 0)) {{
+                const sRect = before.getBoundingClientRect();
+                const first = before.children[0].getBoundingClientRect();
+                const gap = first.top - sRect.top;
+                if (gap > 0) space += gap;
+            }}
+
+            if (after && after.children.length > 0 &&
+                (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS >= 0)) {{
+                const sRect = after.getBoundingClientRect();
+                const last = after.children[after.children.length - 1].getBoundingClientRect();
+                const gap = sRect.bottom - last.bottom;
+                if (gap > 0) space += gap;
+            }}
+
+            return space;
+        }}
+
+        ns._runAutoAdjust = function() {{
+            if (!_isAutoMode() || _autoAdjusting) return;
+
+            const currentCount = _getAutoCurrentCount();
+            const totalItems = _getAutoTotalItems();
+            if (totalItems === 0) return;
+
+            const overflow = _getAutoSectionOverflow();
+            const avgHeight = _getAutoAvgCardHeight();
+            const gapPx = _getAutoGapPx();
+
+            if (overflow > 0) {{
+                // Overflow exists — check if it's more than ~1 card
+                if (overflow > avgHeight * 1.5) {{
+                    // Too much overflow — estimate how many to remove
+                    const toRemove = Math.ceil((overflow - avgHeight * 0.5) / (avgHeight + gapPx));
+                    const adjusted = (_AUTO_FOCUS_POS === null)
+                        ? Math.max(_AUTO_STEP, Math.ceil(toRemove / 2) * 2)
+                        : Math.max(_AUTO_STEP, toRemove);
+                    const newCount = Math.max(1, currentCount - adjusted);
+                    if (newCount !== currentCount) {{
+                        _autoAdjusting = true;
+                        ns._autoUpdateCount(newCount);
+                    }}
+                }}
+                // else: ~1 card overflow = target state, done
+            }} else {{
+                // No overflow — check if we can add more
+                if (currentCount >= totalItems) return;  // All items already visible
+
+                const remaining = _getAutoRemainingSpace();
+                const toAdd = Math.floor(remaining / (avgHeight + gapPx));
+                const adjusted = (_AUTO_FOCUS_POS === null)
+                    ? Math.max(_AUTO_STEP, Math.floor(toAdd / 2) * 2)
+                    : Math.max(_AUTO_STEP, toAdd);
+                const newCount = Math.min(totalItems, currentCount + adjusted);
+                if (newCount > currentCount) {{
+                    _autoAdjusting = true;
+                    ns._autoUpdateCount(newCount);
+                }}
+            }}
+        }};
+
+        ns.triggerAutoAdjust = function() {{
+            // Debounced entry point for external triggers (resize, width, scale).
+            if (!_isAutoMode()) return;
+            clearTimeout(_autoAdjustTimer);
+            _autoAdjustTimer = setTimeout(function() {{
+                ns._runAutoAdjust();
+            }}, 200);
+        }};
     """
 
 # %% ../../nbs/js/core.ipynb #jc000009
@@ -225,6 +407,14 @@ def _generate_coordinator_js(
                 requestAnimationFrame(function() {{
                     const cs2 = document.getElementById('{ids.card_stack}');
                     if (cs2) cs2.style.opacity = '1';
+
+                    // Continue auto-adjust loop if an adjustment is in flight
+                    if (typeof _autoAdjusting !== 'undefined' && _autoAdjusting) {{
+                        _autoAdjusting = false;
+                        requestAnimationFrame(function() {{
+                            if (ns._runAutoAdjust) ns._runAutoAdjust();
+                        }});
+                    }}
                 }});
             }});
         }};
@@ -251,7 +441,11 @@ def _generate_coordinator_js(
         // === Initialize ===
         requestAnimationFrame(function() {{
             _syncCountDropdown();
-            setTimeout(function() {{ ns.applyAllViewportSettings(); }}, 50);
+            setTimeout(function() {{
+                ns.applyAllViewportSettings();
+                // Trigger auto-adjust after initial layout settles
+                if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
+            }}, 50);
         }});
     """
 
@@ -306,6 +500,7 @@ def generate_card_stack_js(
     width_js = _generate_width_mgmt_js(ids, config, urls)
     scale_js = _generate_scale_mgmt_js(ids, config, urls)
     count_js = _generate_card_count_mgmt_js(ids, config, urls)
+    auto_js = _generate_auto_adjust_js(ids, config, urls, focus_position) if config.auto_visible_count else ""
     global_cbs_js = _generate_global_callbacks_js(config)
     coordinator_js = _generate_coordinator_js(ids, config, focus_position)
 
@@ -319,6 +514,7 @@ def generate_card_stack_js(
         {width_js}
         {scale_js}
         {count_js}
+        {auto_js}
         {global_cbs_js}
         {coordinator_js}
         {extra_js}

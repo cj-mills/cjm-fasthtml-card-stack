@@ -96,16 +96,22 @@ def render_card_count_select(
     current_count: int = 3,  # Currently selected card count
 ) -> Any:  # Card count dropdown component
     """Render the card count dropdown selector."""
-    js_fn = f"window.cardStacks['{config.prefix}'].updateCardCount(this.value)"
+    js_fn = f"window.cardStacks['{config.prefix}'].handleCountChange(this.value)"
 
-    options = [
+    options = []
+
+    # Auto option (client-side JS syncs the selected state via _syncCountDropdown)
+    if config.auto_visible_count:
+        options.append(Option("Auto", value="auto"))
+
+    options.extend(
         Option(
             f"{count} card{'s' if count > 1 else ''}",
             value=str(count),
             selected=(count == current_count)
         )
         for count in config.visible_count_options
-    ]
+    )
 
     return Select(
         *options,

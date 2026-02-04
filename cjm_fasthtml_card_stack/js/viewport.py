@@ -112,7 +112,10 @@ def generate_viewport_height_js(
             return function(...args) {{ clearTimeout(tid); tid = setTimeout(() => fn.apply(this, args), delay); }};
         }}
 
-        const _debouncedResize = _debounce(calculateAndSetViewportHeight, 100);
+        const _debouncedResize = _debounce(function() {{
+            calculateAndSetViewportHeight();
+            if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
+        }}, 100);
 
         if (!window._csResizeListener_{ids.prefix.replace('-', '_')}) {{
             window._csResizeListener_{ids.prefix.replace('-', '_')} = true;

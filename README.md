@@ -66,37 +66,37 @@ graph LR
     components_states --> core_html_ids
     components_viewport --> core_config
     components_viewport --> core_html_ids
-    components_viewport --> core_models
-    components_viewport --> helpers_focus
-    components_viewport --> core_constants
     components_viewport --> components_states
+    components_viewport --> core_constants
+    components_viewport --> helpers_focus
+    components_viewport --> core_models
     helpers_focus --> core_html_ids
     js_core --> core_constants
     js_core --> core_config
-    js_core --> core_html_ids
-    js_core --> core_models
-    js_core --> js_scroll
     js_core --> js_navigation
+    js_core --> js_scroll
+    js_core --> core_html_ids
     js_core --> js_viewport
     js_core --> core_button_ids
+    js_core --> core_models
     js_navigation --> core_button_ids
-    js_scroll --> core_constants
     js_scroll --> core_html_ids
+    js_scroll --> core_constants
     js_scroll --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> js_core
     keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
-    keyboard_actions --> core_models
     keyboard_actions --> core_button_ids
+    keyboard_actions --> core_models
+    keyboard_actions --> js_core
+    routes_handlers --> components_viewport
     routes_handlers --> core_config
     routes_handlers --> core_html_ids
     routes_handlers --> core_models
-    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
     routes_handlers --> components_progress
-    routes_router --> routes_handlers
     routes_router --> core_config
+    routes_router --> routes_handlers
     routes_router --> core_html_ids
     routes_router --> core_models
 ```
@@ -319,6 +319,7 @@ class CardStackConfig:
     
     prefix: str = field(...)  # HTML ID prefix (auto-generated if omitted)
     visible_count_options: Tuple[int, ...] = (1, 3, 5, 7, 9)  # Choices for card count dropdown
+    auto_visible_count: bool = True  # Whether "Auto" option appears in card count dropdown
     card_width_min: int = 30  # Width slider minimum (rem)
     card_width_max: int = 120  # Width slider maximum (rem)
     card_width_step: int = 5  # Width slider step (rem)
@@ -352,7 +353,8 @@ from cjm_fasthtml_card_stack.core.constants import (
     DEFAULT_CARD_SCALE,
     width_storage_key,
     scale_storage_key,
-    card_count_storage_key
+    card_count_storage_key,
+    auto_count_storage_key
 )
 ```
 
@@ -377,6 +379,13 @@ def card_count_storage_key(
     prefix: str  # Card stack instance prefix
 ) -> str:  # localStorage key for card count
     "Generate localStorage key for card count."
+```
+
+``` python
+def auto_count_storage_key(
+    prefix: str  # Card stack instance prefix
+) -> str:  # localStorage key for auto card count mode
+    "Generate localStorage key for auto card count mode."
 ```
 
 #### Variables
@@ -472,6 +481,16 @@ def _generate_card_count_mgmt_js(
     urls: CardStackUrls,  # URL bundle (update_viewport)
 ) -> str:  # JS code fragment for card count management
     "Generate JS for card count selector management."
+```
+
+``` python
+def _generate_auto_adjust_js(
+    ids: CardStackHtmlIds,  # HTML IDs for this instance
+    config: CardStackConfig,  # Config for auto mode check
+    urls: CardStackUrls,  # URL bundle (update_viewport)
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
+) -> str:  # JS code fragment for auto visible count adjustment
+    "Generate JS for automatic visible count adjustment based on overflow detection."
 ```
 
 ``` python
