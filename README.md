@@ -25,10 +25,11 @@ pip install cjm_fasthtml_card_stack
     │   └── models.ipynb      # Core dataclasses for card stack state, render context, and URL routing.
     ├── helpers/ (1)
     │   └── focus.ipynb  # Focus position resolution, viewport window calculation, and OOB focus sync.
-    ├── js/ (4)
+    ├── js/ (5)
     │   ├── core.ipynb        # Master composer for card stack JavaScript. Combines viewport height,
     │   ├── navigation.ipynb  # JavaScript generator for page jump and first/last navigation helpers.
     │   ├── scroll.ipynb      # JavaScript generator for scroll-to-nav conversion.
+    │   ├── touch.ipynb       # JavaScript generator for touch-to-nav conversion: swipe, drag,
     │   └── viewport.ipynb    # JavaScript generator for dynamic viewport height calculation.
     ├── keyboard/ (1)
     │   └── actions.ipynb  # Keyboard navigation focus zone and action factories for the card stack.
@@ -36,7 +37,7 @@ pip install cjm_fasthtml_card_stack
         ├── handlers.ipynb  # Response builder functions for card stack operations (Tier 1 API).
         └── router.ipynb    # Convenience router factory that wires up standard card stack routes (Tier 2 API).
 
-Total: 17 notebooks across 6 directories
+Total: 18 notebooks across 6 directories
 
 ## Module Dependencies
 
@@ -55,6 +56,7 @@ graph LR
     js_core[js.core<br/>JS: Core]
     js_navigation[js.navigation<br/>JS: Page Navigation]
     js_scroll[js.scroll<br/>JS: Scroll Navigation]
+    js_touch[js.touch<br/>JS: Touch Navigation]
     js_viewport[js.viewport<br/>JS: Viewport Height]
     keyboard_actions[keyboard.actions<br/>Actions]
     routes_handlers[routes.handlers<br/>Handlers]
@@ -64,44 +66,48 @@ graph LR
     components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_constants
     components_viewport --> core_models
-    components_viewport --> core_config
     components_viewport --> helpers_focus
     components_viewport --> components_states
+    components_viewport --> core_constants
+    components_viewport --> core_config
     components_viewport --> core_html_ids
     helpers_focus --> core_html_ids
     js_core --> core_constants
-    js_core --> js_navigation
-    js_core --> core_config
-    js_core --> core_models
-    js_core --> js_viewport
-    js_core --> js_scroll
     js_core --> core_button_ids
+    js_core --> js_viewport
+    js_core --> js_touch
+    js_core --> js_navigation
+    js_core --> core_models
+    js_core --> core_config
+    js_core --> js_scroll
     js_core --> core_html_ids
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_html_ids
     js_scroll --> core_button_ids
+    js_scroll --> core_html_ids
+    js_touch --> core_constants
+    js_touch --> core_button_ids
+    js_touch --> core_html_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_config
-    keyboard_actions --> core_models
-    keyboard_actions --> js_core
     keyboard_actions --> core_button_ids
+    keyboard_actions --> core_models
+    keyboard_actions --> core_config
+    keyboard_actions --> js_core
     keyboard_actions --> core_html_ids
     routes_handlers --> components_progress
-    routes_handlers --> components_viewport
-    routes_handlers --> core_config
     routes_handlers --> core_models
-    routes_handlers --> core_html_ids
+    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
+    routes_handlers --> core_config
+    routes_handlers --> core_html_ids
+    routes_router --> core_models
     routes_router --> routes_handlers
     routes_router --> core_config
-    routes_router --> core_models
     routes_router --> core_html_ids
 ```
 
-*39 cross-module dependencies detected*
+*43 cross-module dependencies detected*
 
 ## CLI Reference
 
@@ -349,6 +355,11 @@ from cjm_fasthtml_card_stack.core.constants import (
     SCROLL_THRESHOLD,
     NAVIGATION_COOLDOWN,
     TRACKPAD_COOLDOWN,
+    TOUCH_SWIPE_THRESHOLD,
+    TOUCH_MOMENTUM_MIN_VELOCITY,
+    TOUCH_MOMENTUM_FRICTION,
+    TOUCH_PINCH_THRESHOLD,
+    TOUCH_VELOCITY_SAMPLES,
     DEFAULT_VISIBLE_COUNT,
     DEFAULT_CARD_WIDTH,
     DEFAULT_CARD_SCALE,
@@ -395,6 +406,11 @@ def auto_count_storage_key(
 SCROLL_THRESHOLD: int = 1
 NAVIGATION_COOLDOWN: int = 100
 TRACKPAD_COOLDOWN: int = 250
+TOUCH_SWIPE_THRESHOLD: int = 30
+TOUCH_MOMENTUM_MIN_VELOCITY: float = 0.5
+TOUCH_MOMENTUM_FRICTION: float = 0.95
+TOUCH_PINCH_THRESHOLD: int = 30
+TOUCH_VELOCITY_SAMPLES: int = 5
 DEFAULT_VISIBLE_COUNT: int = 3
 DEFAULT_CARD_WIDTH: int = 80
 DEFAULT_CARD_SCALE: int = 100
@@ -1005,6 +1021,29 @@ def render_empty_state(
     subtitle: str = "",  # Optional subtitle text
 ) -> Any:  # Empty state component
     "Render empty state when no items exist."
+```
+
+### JS: Touch Navigation (`touch.ipynb`)
+
+> JavaScript generator for touch-to-nav conversion: swipe, drag,
+
+#### Import
+
+``` python
+from cjm_fasthtml_card_stack.js.touch import (
+    generate_touch_nav_js
+)
+```
+
+#### Functions
+
+``` python
+def generate_touch_nav_js(
+    ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
+    button_ids: CardStackButtonIds,  # Button IDs for navigation triggers
+    disable_in_modes: Tuple[str, ...] = (),  # Mode names where touch nav is suppressed
+) -> str:  # JavaScript code fragment for touch navigation
+    "Generate JS for touch gesture to navigation conversion."
 ```
 
 ### Viewport (`viewport.ipynb`)

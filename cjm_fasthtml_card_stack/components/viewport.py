@@ -8,7 +8,7 @@ __all__ = ['render_slot_card', 'render_all_slots_oob', 'render_viewport']
 # %% ../../nbs/components/viewport.ipynb #v1000003
 from typing import Any, Callable, List, Optional
 
-from fasthtml.common import Div, Script, A, Hidden
+from fasthtml.common import Div, Script, Hidden
 
 # DaisyUI utilities
 from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui
@@ -20,7 +20,7 @@ from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
     flex_display, flex_direction, justify, items, gap, grid_display
 )
 from cjm_fasthtml_tailwind.utilities.layout import overflow, position, inset, z
-from cjm_fasthtml_tailwind.utilities.interactivity import cursor
+from cjm_fasthtml_tailwind.utilities.interactivity import cursor, touch
 from cjm_fasthtml_tailwind.utilities.sizing import w, h
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.core.base import combine_classes
@@ -61,7 +61,7 @@ def _render_click_overlay(
     urls: CardStackUrls,  # URL bundle for navigation
 ) -> Any:  # Transparent click overlay element
     """Render transparent click-to-focus overlay for a context card slot."""
-    return A(
+    return Div(
         cls=combine_classes(
             position.absolute, inset(0), z(10),
             cursor.pointer
@@ -289,7 +289,7 @@ def render_viewport(
     inner_cls = combine_classes(grid_display, w.full, h.full, m.x.auto, gap(4))
     inner_style = f"grid-template-rows: {grid_rows}; max-width: {state.card_width}rem"
 
-    outer_cls = combine_classes(w.full, p.x(2), p.y(2), overflow.hidden)
+    outer_cls = combine_classes(w.full, p.x(2), p.y(2), overflow.hidden, touch.none)
 
     # Hidden input for focused index (needed for keyboard nav hx-include and OOB updates)
     focused_input = Hidden(

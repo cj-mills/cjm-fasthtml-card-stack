@@ -21,6 +21,7 @@ from cjm_fasthtml_card_stack.core.constants import (
 )
 from .viewport import generate_viewport_height_js
 from .scroll import generate_scroll_nav_js
+from .touch import generate_touch_nav_js
 from .navigation import generate_page_nav_js
 
 # %% ../../nbs/js/core.ipynb #jc000005
@@ -402,6 +403,7 @@ def _generate_coordinator_js(
                 if (cs) {{
                     cs._scrollNavSetup = false;
                     if (ns._setupScrollNav) ns._setupScrollNav();
+                    if (ns._setupTouchNav) ns._setupTouchNav();
                 }}
 
                 requestAnimationFrame(function() {{
@@ -496,6 +498,7 @@ def generate_card_stack_js(
     # Collect all fragments
     viewport_js = generate_viewport_height_js(ids, container_id)
     scroll_js = generate_scroll_nav_js(ids, button_ids, config.disable_scroll_in_modes)
+    touch_js = generate_touch_nav_js(ids, button_ids, config.disable_scroll_in_modes)
     page_nav_js = generate_page_nav_js(button_ids)
     width_js = _generate_width_mgmt_js(ids, config, urls)
     scale_js = _generate_scale_mgmt_js(ids, config, urls)
@@ -510,6 +513,7 @@ def generate_card_stack_js(
 
         {viewport_js}
         {scroll_js}
+        {touch_js}
         {page_nav_js}
         {width_js}
         {scale_js}
