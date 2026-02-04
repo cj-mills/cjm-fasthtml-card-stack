@@ -10,7 +10,7 @@ from typing import Tuple
 
 from ..core.html_ids import CardStackHtmlIds
 from ..core.button_ids import CardStackButtonIds
-from ..core.constants import SCROLL_THRESHOLD, NAVIGATION_COOLDOWN
+from ..core.constants import SCROLL_THRESHOLD, NAVIGATION_COOLDOWN, TRACKPAD_COOLDOWN
 
 # %% ../../nbs/js/scroll.ipynb #js000005
 def generate_scroll_nav_js(
@@ -37,11 +37,18 @@ def generate_scroll_nav_js(
         mode_check = ""
         mode_guard = ""
 
+    # Threshold for classifying input as trackpad vs mouse wheel.
+    # Mouse wheels typically send |deltaY| >= 50 per tick;
+    # trackpads send small continuous values (1-30).
+    trackpad_detect_threshold = 50
+
     return f"""
         // === Scroll Navigation ===
         const _scrollState = {{ accumulatedDelta: 0, lastNavTime: 0 }};
         const _SCROLL_THRESHOLD = {SCROLL_THRESHOLD};
         const _NAV_COOLDOWN = {NAVIGATION_COOLDOWN};
+        const _TRACKPAD_COOLDOWN = {TRACKPAD_COOLDOWN};
+        const _TRACKPAD_DETECT = {trackpad_detect_threshold};
         {mode_check}
         function setupScrollNavigation() {{
             const cardStack = document.getElementById('{ids.card_stack}');
@@ -57,29 +64,36 @@ def generate_scroll_nav_js(
                 if (evt.deltaMode === 1) deltaY *= 32;      // DOM_DELTA_LINE
                 else if (evt.deltaMode === 2) deltaY *= 800; // DOM_DELTA_PAGE
 
+                // Pick cooldown based on input type: small deltas = trackpad
+                const cooldown = Math.abs(deltaY) < _TRACKPAD_DETECT
+                    ? _TRACKPAD_COOLDOWN : _NAV_COOLDOWN;
+
                 // Use event creation time for cooldown (not Date.now() wall time).
                 // Batched events from main-thread blockage share the same timeStamp,
                 // so only the first in a batch passes cooldown.
                 const eventTime = evt.timeStamp;
 
-                if (eventTime - _scrollState.lastNavTime > _NAV_COOLDOWN * 2) {{
+                if (eventTime - _scrollState.lastNavTime > cooldown * 2) {{
                     _scrollState.accumulatedDelta = 0;
                 }}
                 _scrollState.accumulatedDelta += deltaY;
 
                 if (Math.abs(_scrollState.accumulatedDelta) < _SCROLL_THRESHOLD) return;
 
-                if (eventTime - _scrollState.lastNavTime >= _NAV_COOLDOWN) {{
+                if (eventTime - _scrollState.lastNavTime >= cooldown) {{
+                    // Cooldown passed — fire navigation
                     const btnId = _scrollState.accumulatedDelta > 0
                         ? '{button_ids.nav_down}' : '{button_ids.nav_up}';
                     _scrollState.accumulatedDelta = 0;
                     _scrollState.lastNavTime = eventTime;
                     const btn = document.getElementById(btnId);
                     if (btn) btn.click();
-                }} else {{
-                    // Discard — batched event from main-thread blockage
+                }} else if (eventTime === _scrollState.lastNavTime) {{
+                    // Same-batch event (main-thread blockage) — discard
                     _scrollState.accumulatedDelta = 0;
                 }}
+                // else: real event during cooldown (e.g. trackpad) — keep
+                // accumulated delta so it fires on the next cooldown-passing event
             }}, {{ passive: false }});
         }}
 
