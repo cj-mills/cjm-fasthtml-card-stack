@@ -66,38 +66,38 @@ graph LR
     components_states --> core_html_ids
     components_viewport --> core_config
     components_viewport --> core_html_ids
-    components_viewport --> components_states
-    components_viewport --> core_constants
     components_viewport --> core_models
     components_viewport --> helpers_focus
+    components_viewport --> core_constants
+    components_viewport --> components_states
     helpers_focus --> core_html_ids
     js_core --> core_constants
     js_core --> core_config
     js_core --> core_html_ids
-    js_core --> js_viewport
-    js_core --> js_navigation
-    js_core --> js_scroll
     js_core --> core_models
+    js_core --> js_scroll
+    js_core --> js_navigation
+    js_core --> js_viewport
     js_core --> core_button_ids
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
+    js_scroll --> core_button_ids
     js_viewport --> core_html_ids
+    keyboard_actions --> js_core
     keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
-    keyboard_actions --> js_core
     keyboard_actions --> core_models
     keyboard_actions --> core_button_ids
-    routes_handlers --> core_models
     routes_handlers --> core_config
     routes_handlers --> core_html_ids
-    routes_handlers --> components_progress
-    routes_handlers --> helpers_focus
+    routes_handlers --> core_models
     routes_handlers --> components_viewport
+    routes_handlers --> helpers_focus
+    routes_handlers --> components_progress
+    routes_router --> routes_handlers
     routes_router --> core_config
     routes_router --> core_html_ids
-    routes_router --> routes_handlers
     routes_router --> core_models
 ```
 
@@ -478,6 +478,7 @@ def _generate_card_count_mgmt_js(
 def _generate_coordinator_js(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     config: CardStackConfig,  # Config for prefix-unique listener guards
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # JS code fragment for master coordinator
     "Generate JS for the master coordinator and HTMX listener."
 ```
@@ -634,8 +635,8 @@ def card_stack_update_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
-) -> Any:  # Full viewport component (outerHTML swap)
-    "Update viewport with new card count. Mutates state.visible_count in place."
+) -> Tuple:  # OOB section elements (3 viewport sections)
+    "Update viewport with new card count via OOB section swaps. Mutates state.visible_count in place."
 ```
 
 ``` python
@@ -1046,10 +1047,9 @@ def render_all_slots_oob(
 
 ``` python
 def _grid_template_rows(
-    focus_slot: int,  # Resolved focus slot position
-    visible_count: int,  # Number of visible slots
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # CSS grid-template-rows value
-    "Compute CSS grid-template-rows based on focus slot position."
+    "Compute CSS grid-template-rows based on focus position intent."
 ```
 
 ``` python

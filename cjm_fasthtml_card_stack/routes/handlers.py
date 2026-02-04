@@ -127,17 +127,17 @@ def card_stack_update_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
-) -> Any:  # Full viewport component (outerHTML swap)
-    """Update viewport with new card count. Mutates state.visible_count in place."""
+) -> Tuple:  # OOB section elements (3 viewport sections)
+    """Update viewport with new card count via OOB section swaps. Mutates state.visible_count in place."""
     state.visible_count = visible_count
-    return render_viewport(
+    return tuple(build_slots_response(
         card_items=card_items,
         state=state,
         config=config,
         ids=ids,
         urls=urls,
         render_card=render_card,
-    )
+    ))
 
 # %% ../../nbs/routes/handlers.ipynb #h1000013
 def card_stack_save_width(

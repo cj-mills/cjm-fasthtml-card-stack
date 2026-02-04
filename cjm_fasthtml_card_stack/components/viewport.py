@@ -210,19 +210,17 @@ def render_all_slots_oob(
 
 # %% ../../nbs/components/viewport.ipynb #v1000031
 def _grid_template_rows(
-    focus_slot: int,  # Resolved focus slot position
-    visible_count: int,  # Number of visible slots
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # CSS grid-template-rows value
-    """Compute CSS grid-template-rows based on focus slot position."""
-    slots_before = focus_slot
-    slots_after = visible_count - focus_slot - 1
-
-    if slots_before == 0:
-        return "auto 1fr"  # No before section
-    elif slots_after == 0:
-        return "1fr auto"  # No after section
+    """Compute CSS grid-template-rows based on focus position intent."""
+    if focus_position is None:
+        return "1fr auto 1fr"  # Center: always 3-section
+    elif focus_position == 0:
+        return "auto 1fr"  # Top: focused first
+    elif focus_position < 0:
+        return "1fr auto"  # Bottom: focused last
     else:
-        return "1fr auto 1fr"  # Standard 3-section
+        return "1fr auto 1fr"  # Custom positive: always 3-section
 
 # %% ../../nbs/components/viewport.ipynb #v1000041
 def render_viewport(
@@ -285,8 +283,8 @@ def render_viewport(
         cls=section_cls(justify.start)
     )
 
-    # Grid template adapts to focus position
-    grid_rows = _grid_template_rows(focus_slot, state.visible_count)
+    # Grid template based on focus position intent (stable across count changes)
+    grid_rows = _grid_template_rows(state.focus_position)
 
     inner_cls = combine_classes(grid_display, w.full, h.full, m.x.auto, gap(4))
     inner_style = f"grid-template-rows: {grid_rows}; max-width: {state.card_width}rem"

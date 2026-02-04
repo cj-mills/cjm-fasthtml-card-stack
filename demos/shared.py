@@ -79,6 +79,7 @@ def render_demo_page(
             config=config,
             urls=urls,
             container_id=container_id,
+            focus_position=state.focus_position,
         )
 
         return Div(

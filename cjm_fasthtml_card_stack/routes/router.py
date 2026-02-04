@@ -100,7 +100,7 @@ def init_card_stack_router(
 
     @router
     def update_viewport(visible_count: int) -> Any:
-        """Update viewport with new card count (full outerHTML swap)."""
+        """Update viewport with new card count (OOB section swaps)."""
         state = state_getter()
         items = get_items()
         result = card_stack_update_viewport(

@@ -6,7 +6,7 @@
 __all__ = ['global_callback_name', 'generate_card_stack_js']
 
 # %% ../../nbs/js/core.ipynb #jc000003
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 from fasthtml.common import Script
 
@@ -166,7 +166,7 @@ def _generate_card_count_mgmt_js(
             if ('{urls.update_viewport}') {{
                 htmx.ajax('POST', '{urls.update_viewport}', {{
                     target: '#' + '{ids.card_stack}',
-                    swap: 'outerHTML',
+                    swap: 'none',
                     values: {{ visible_count: count }}
                 }});
             }}
@@ -184,15 +184,36 @@ def _generate_card_count_mgmt_js(
 def _generate_coordinator_js(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     config: CardStackConfig,  # Config for prefix-unique listener guards
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # JS code fragment for master coordinator
     """Generate JS for the master coordinator and HTMX listener."""
     guard_var = f"_csMasterListener_{config.prefix.replace('-', '_')}"
+    js_focus_pos = "null" if focus_position is None else str(focus_position)
     return f"""
+        // === Grid Template Management ===
+        ns.applyGridTemplate = function() {{
+            const inner = document.getElementById('{ids.card_stack_inner}');
+            if (!inner) return;
+            const focusPosRaw = {js_focus_pos};
+            let tmpl;
+            if (focusPosRaw === null) {{
+                tmpl = '1fr auto 1fr';
+            }} else if (focusPosRaw === 0) {{
+                tmpl = 'auto 1fr';
+            }} else if (focusPosRaw < 0) {{
+                tmpl = '1fr auto';
+            }} else {{
+                tmpl = '1fr auto 1fr';
+            }}
+            inner.style.gridTemplateRows = tmpl;
+        }};
+
         // === Master Coordinator ===
         ns.applyAllViewportSettings = function() {{
             requestAnimationFrame(function() {{
                 if (ns.applyWidth) ns.applyWidth();
                 if (ns.applyScale) ns.applyScale();
+                if (ns.applyGridTemplate) ns.applyGridTemplate();
                 if (ns.recalculateHeight) ns.recalculateHeight();
 
                 const cs = document.getElementById('{ids.card_stack}');
@@ -272,6 +293,7 @@ def generate_card_stack_js(
     urls: CardStackUrls,  # URL bundle for routing
     container_id: str = "",  # Consumer's parent container ID (for height calc)
     extra_scripts: Tuple[str, ...] = (),  # Additional JS to include in the IIFE
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> Any:  # Script element with all card stack JavaScript
     """Compose all card stack JS into a single namespaced IIFE."""
     prefix = config.prefix
@@ -285,7 +307,7 @@ def generate_card_stack_js(
     scale_js = _generate_scale_mgmt_js(ids, config, urls)
     count_js = _generate_card_count_mgmt_js(ids, config, urls)
     global_cbs_js = _generate_global_callbacks_js(config)
-    coordinator_js = _generate_coordinator_js(ids, config)
+    coordinator_js = _generate_coordinator_js(ids, config, focus_position)
 
     return Script(f"""(function() {{
         window.cardStacks = window.cardStacks || {{}};
