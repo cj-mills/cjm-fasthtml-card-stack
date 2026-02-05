@@ -7,7 +7,7 @@ from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.utilities.sizing import container, max_w
 from cjm_fasthtml_tailwind.utilities.typography import font_size, font_weight
 from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
-    flex_display, items, justify, gap
+    flex_display, flex_direction, flex_wrap, items, justify, gap, grow
 )
 from cjm_fasthtml_tailwind.utilities.borders import rounded
 from cjm_fasthtml_tailwind.core.base import combine_classes
@@ -102,16 +102,18 @@ def render_demo_page(
                     Div(
                         Span("Width:", cls=combine_classes(font_size.sm, text_dui.base_content)),
                         render_width_slider(config, ids, state.card_width),
-                        cls=combine_classes(flex_display, items.center, gap(2)),
+                        cls=combine_classes(flex_display, items.center, gap(2), grow()),
                     ),
                     Div(
                         Span("Scale:", cls=combine_classes(font_size.sm, text_dui.base_content)),
                         render_scale_slider(config, ids, state.card_scale),
-                        cls=combine_classes(flex_display, items.center, gap(2)),
+                        cls=combine_classes(flex_display, items.center, gap(2), grow()),
                     ),
                     cls=combine_classes(
-                        flex_display, items.center, justify.between,
-                        gap(4), m.b(2), p(2),
+                        flex_display, flex_direction.col, flex_direction.row.sm,
+                        flex_wrap.wrap, items.stretch, items.center.sm,
+                        justify.between, gap.x(4), gap.y(2),
+                        m.b(2), p(2),
                         bg_dui.base_200, rounded.lg,
                     )
                 ),
