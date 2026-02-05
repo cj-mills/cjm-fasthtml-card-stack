@@ -76,7 +76,7 @@ def render_slot_card(
     slot_index: int,  # Index of this slot in the viewport (0-based)
     focus_slot: int,  # Which slot is the focused position
     card_items: List[Any],  # Full items list
-    item_index: Optional[int],  # Item index for this slot (None for placeholder)
+    item_index: int,  # Item index (negative or >= len for placeholder)
     render_card: Callable,  # Callback: (item, CardRenderContext) -> FT
     state: CardStackState,  # Current card stack state
     config: CardStackConfig,  # Card stack configuration
@@ -85,19 +85,18 @@ def render_slot_card(
     oob: bool = False,  # Whether to render as OOB swap
 ) -> Any:  # Slot content wrapper
     """Render a single card for a viewport slot."""
-    slot_id = (ids.viewport_placeholder(slot_index)
-               if item_index is None
-               else ids.viewport_slot(item_index))
+    total_items = len(card_items)
+    is_placeholder = item_index < 0 or item_index >= total_items
+    slot_id = ids.viewport_slot(item_index)
     is_focused = slot_index == focus_slot
     card_role: CardRole = "focused" if is_focused else "context"
-    total_items = len(card_items)
     distance = slot_index - focus_slot
 
     # Determine placeholder type based on position relative to focus
     placeholder_type = "start" if slot_index < focus_slot else "end"
 
     # Render content
-    if item_index is None:
+    if is_placeholder:
         content = render_placeholder_card(placeholder_type)
     else:
         context = CardRenderContext(
@@ -120,9 +119,9 @@ def render_slot_card(
     # Mode sync script in focused slot OOB updates
     mode_sync = _render_mode_sync_script(state.active_mode) if (oob and is_focused) else None
 
-    # Click-to-focus overlay for context cards
+    # Click-to-focus overlay for context cards (not placeholders)
     click_overlay = None
-    if config.click_to_focus and not is_focused and item_index is not None:
+    if config.click_to_focus and not is_focused and not is_placeholder:
         click_overlay = _render_click_overlay(item_index, urls)
 
     # Slot container

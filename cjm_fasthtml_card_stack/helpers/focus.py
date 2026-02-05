@@ -32,7 +32,7 @@ def calculate_viewport_window(
     total_items: int,  # Total number of items
     visible_count: int,  # Number of visible card slots
     focus_position: Optional[int] = None,  # Focus slot (None=center)
-) -> List[Optional[int]]:  # Slot indices (None for placeholder slots)
+) -> List[int]:  # Item indices for each slot (negative or >= total_items for placeholders)
     """Calculate which item indices should be visible in each viewport slot."""
     focus_slot = resolve_focus_slot(focus_position, visible_count)
     slots_before = focus_slot
@@ -40,18 +40,16 @@ def calculate_viewport_window(
 
     result = []
 
-    # Slots before focused
+    # Slots before focused (may include negative indices for placeholders)
     for offset in range(slots_before, 0, -1):
-        idx = focused_index - offset
-        result.append(idx if idx >= 0 else None)
+        result.append(focused_index - offset)
 
     # Focused slot
-    result.append(focused_index if 0 <= focused_index < total_items else None)
+    result.append(focused_index)
 
-    # Slots after focused
+    # Slots after focused (may include indices >= total_items for placeholders)
     for offset in range(1, slots_after + 1):
-        idx = focused_index + offset
-        result.append(idx if idx < total_items else None)
+        result.append(focused_index + offset)
 
     return result
 

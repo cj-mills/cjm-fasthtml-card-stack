@@ -204,6 +204,7 @@ def _generate_card_count_mgmt_js(
                 if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
             }} else {{
                 try {{ localStorage.removeItem(_AUTO_KEY); }} catch (e) {{}}
+                if (ns._cancelAutoGrowth) ns._cancelAutoGrowth();
                 ns.updateCardCount(parseInt(value));
             }}
         }};
@@ -235,6 +236,12 @@ def _generate_auto_adjust_js(
         let _autoAdjustTimer = null;
         const _AUTO_FOCUS_POS = {js_focus_pos};
         const _AUTO_STEP = (_AUTO_FOCUS_POS === null) ? 2 : 1;
+
+        // --- Growth validation state ---
+        let _autoGrowing = false;
+        let _preGrowthItemIds = null;
+        let _preGrowthCount = 0;
+        let _autoGrowthFailed = false;
 
         function _getAutoCurrentCount() {{
             const cs = document.getElementById('{ids.card_stack}');
@@ -310,8 +317,77 @@ def _generate_auto_adjust_js(
             return space;
         }}
 
+        // --- Growth validation helpers ---
+
+        function _snapshotItemIds() {{
+            const cs = document.getElementById('{ids.card_stack}');
+            if (!cs) return new Set();
+            const slots = cs.querySelectorAll('.viewport-slot');
+            const idSet = new Set();
+            for (const s of slots) {{
+                if (s.id) idSet.add(s.id);
+            }}
+            return idSet;
+        }}
+
+        function _hideNewItems() {{
+            if (!_preGrowthItemIds) return;
+            const cs = document.getElementById('{ids.card_stack}');
+            if (!cs) return;
+            const slots = cs.querySelectorAll('.viewport-slot');
+            for (const s of slots) {{
+                if (s.id && !_preGrowthItemIds.has(s.id)) {{
+                    s.style.opacity = '0';
+                }}
+            }}
+        }}
+
+        function _revealNewItems() {{
+            const cs = document.getElementById('{ids.card_stack}');
+            if (!cs) return;
+            const slots = cs.querySelectorAll('.viewport-slot');
+            for (const s of slots) {{
+                if (s.style.opacity === '0') {{
+                    s.style.removeProperty('opacity');
+                }}
+            }}
+        }}
+
+        function _validateGrowth() {{
+            const overflow = _getAutoSectionOverflow();
+            if (overflow > 2) {{
+                // Growth caused overflow — revert to pre-growth count
+                _autoGrowthFailed = true;
+                _autoGrowing = false;
+                _preGrowthItemIds = null;
+                _autoAdjusting = true;
+                ns._autoUpdateCount(_preGrowthCount);
+            }} else {{
+                // Growth fits — reveal the new items
+                _revealNewItems();
+                _autoGrowing = false;
+                _preGrowthItemIds = null;
+            }}
+        }}
+
+        ns._cancelAutoGrowth = function() {{
+            if (_autoGrowing) {{
+                _revealNewItems();
+                _autoGrowing = false;
+                _preGrowthItemIds = null;
+                _preGrowthCount = 0;
+            }}
+            _autoGrowthFailed = false;
+        }};
+
         ns._runAutoAdjust = function() {{
             if (!_isAutoMode() || _autoAdjusting) return;
+
+            // If in growth validation cycle, validate instead of normal adjust
+            if (_autoGrowing) {{
+                _validateGrowth();
+                return;
+            }}
 
             const currentCount = _getAutoCurrentCount();
             const totalItems = _getAutoTotalItems();
@@ -321,24 +397,21 @@ def _generate_auto_adjust_js(
             const avgHeight = _getAutoAvgCardHeight();
             const gapPx = _getAutoGapPx();
 
-            if (overflow > 0) {{
-                // Overflow exists — check if it's more than ~1 card
-                if (overflow > avgHeight * 1.5) {{
-                    // Too much overflow — estimate how many to remove
-                    const toRemove = Math.ceil((overflow - avgHeight * 0.5) / (avgHeight + gapPx));
-                    const adjusted = (_AUTO_FOCUS_POS === null)
-                        ? Math.max(_AUTO_STEP, Math.ceil(toRemove / 2) * 2)
-                        : Math.max(_AUTO_STEP, toRemove);
-                    const newCount = Math.max(1, currentCount - adjusted);
-                    if (newCount !== currentCount) {{
-                        _autoAdjusting = true;
-                        ns._autoUpdateCount(newCount);
-                    }}
+            if (overflow > 2) {{
+                // Overflow exists — remove enough cards to eliminate it
+                const toRemove = Math.ceil(overflow / (avgHeight + gapPx));
+                const adjusted = (_AUTO_FOCUS_POS === null)
+                    ? Math.max(_AUTO_STEP, Math.ceil(toRemove / 2) * 2)
+                    : Math.max(_AUTO_STEP, toRemove);
+                const newCount = Math.max(1, currentCount - adjusted);
+                if (newCount !== currentCount) {{
+                    _autoAdjusting = true;
+                    ns._autoUpdateCount(newCount);
                 }}
-                // else: ~1 card overflow = target state, done
             }} else {{
                 // No overflow — check if we can add more
-                if (currentCount >= totalItems) return;  // All items already visible
+                if (currentCount >= totalItems) return;
+                if (_autoGrowthFailed) return;
 
                 const remaining = _getAutoRemainingSpace();
                 const toAdd = Math.floor(remaining / (avgHeight + gapPx));
@@ -347,6 +420,10 @@ def _generate_auto_adjust_js(
                     : Math.max(_AUTO_STEP, toAdd);
                 const newCount = Math.min(totalItems, currentCount + adjusted);
                 if (newCount > currentCount) {{
+                    // Snapshot current state before growth
+                    _preGrowthCount = currentCount;
+                    _preGrowthItemIds = _snapshotItemIds();
+                    _autoGrowing = true;
                     _autoAdjusting = true;
                     ns._autoUpdateCount(newCount);
                 }}
@@ -357,6 +434,7 @@ def _generate_auto_adjust_js(
             // Debounced entry point for external triggers (resize, width, scale).
             if (!_isAutoMode()) return;
             clearTimeout(_autoAdjustTimer);
+            _autoGrowthFailed = false;
             _autoAdjustTimer = setTimeout(function() {{
                 ns._runAutoAdjust();
             }}, 200);
@@ -421,9 +499,26 @@ def _generate_coordinator_js(
             }});
         }};
 
-        // === HTMX Event Listener ===
+        // === HTMX Event Listeners ===
         if (!window.{guard_var}) {{
             window.{guard_var} = true;
+
+            // afterSwap: hide new items before browser paints during growth validation
+            document.body.addEventListener('htmx:afterSwap', function(evt) {{
+                const target = evt.detail.target;
+                if (!target) return;
+                const cs = document.getElementById('{ids.card_stack}');
+                const isCSSwap = (
+                    target.id === '{ids.card_stack}' ||
+                    target.id === '{ids.card_stack_inner}' ||
+                    (cs && cs.contains(target))
+                );
+                if (isCSSwap && typeof _autoGrowing !== 'undefined' && _autoGrowing) {{
+                    _hideNewItems();
+                }}
+            }});
+
+            // afterSettle: sync state and apply viewport settings
             document.body.addEventListener('htmx:afterSettle', function(evt) {{
                 const target = evt.detail.target;
                 if (!target) return;
