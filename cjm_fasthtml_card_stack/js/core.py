@@ -439,7 +439,7 @@ def _generate_coordinator_js(
     focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # JS code fragment for master coordinator
     """Generate JS for the master coordinator and HTMX listener."""
-    guard_var = f"_csMasterListener_{config.prefix.replace('-', '_')}"
+    handler_key = f"_csHandlers_{config.prefix.replace('-', '_')}"
     js_focus_pos = "null" if focus_position is None else str(focus_position)
     return f"""
         // === Grid Template Management ===
@@ -468,12 +468,8 @@ def _generate_coordinator_js(
                 if (ns.applyGridTemplate) ns.applyGridTemplate();
                 if (ns.recalculateHeight) ns.recalculateHeight();
 
-                const cs = document.getElementById('{ids.card_stack}');
-                if (cs) {{
-                    cs._scrollNavSetup = false;
-                    if (ns._setupScrollNav) ns._setupScrollNav();
-                    if (ns._setupTouchNav) ns._setupTouchNav();
-                }}
+                if (ns._setupScrollNav) ns._setupScrollNav();
+                if (ns._setupTouchNav) ns._setupTouchNav();
 
                 requestAnimationFrame(function() {{
                     const cs2 = document.getElementById('{ids.card_stack}');
@@ -491,40 +487,45 @@ def _generate_coordinator_js(
         }};
 
         // === HTMX Event Listeners ===
-        if (!window.{guard_var}) {{
-            window.{guard_var} = true;
-
-            // afterSwap: hide new items before browser paints during growth validation
-            document.body.addEventListener('htmx:afterSwap', function(evt) {{
-                const target = evt.detail.target;
-                if (!target) return;
-                const cs = document.getElementById('{ids.card_stack}');
-                const isCSSwap = (
-                    target.id === '{ids.card_stack}' ||
-                    target.id === '{ids.card_stack_inner}' ||
-                    (cs && cs.contains(target))
-                );
-                if (isCSSwap && typeof _autoGrowing !== 'undefined' && _autoGrowing) {{
-                    _hideNewItems();
-                }}
-            }});
-
-            // afterSettle: sync state and apply viewport settings
-            document.body.addEventListener('htmx:afterSettle', function(evt) {{
-                const target = evt.detail.target;
-                if (!target) return;
-                const cs = document.getElementById('{ids.card_stack}');
-                const isCSSwap = (
-                    target.id === '{ids.card_stack}' ||
-                    target.id === '{ids.card_stack_inner}' ||
-                    (cs && cs.contains(target))
-                );
-                if (isCSSwap) {{
-                    _syncCountDropdown();
-                    ns.applyAllViewportSettings();
-                }}
-            }});
+        // Remove old listeners from previous IIFE (handles HTMX page navigation
+        // that re-executes this script without a full page reload).
+        if (window.{handler_key}) {{
+            document.body.removeEventListener('htmx:afterSwap', window.{handler_key}.swap);
+            document.body.removeEventListener('htmx:afterSettle', window.{handler_key}.settle);
         }}
+
+        function _afterSwapHandler(evt) {{
+            const target = evt.detail.target;
+            if (!target) return;
+            const cs = document.getElementById('{ids.card_stack}');
+            const isCSSwap = (
+                target.id === '{ids.card_stack}' ||
+                target.id === '{ids.card_stack_inner}' ||
+                (cs && cs.contains(target))
+            );
+            if (isCSSwap && typeof _autoGrowing !== 'undefined' && _autoGrowing) {{
+                _hideNewItems();
+            }}
+        }}
+
+        function _afterSettleHandler(evt) {{
+            const target = evt.detail.target;
+            if (!target) return;
+            const cs = document.getElementById('{ids.card_stack}');
+            const isCSSwap = (
+                target.id === '{ids.card_stack}' ||
+                target.id === '{ids.card_stack_inner}' ||
+                (cs && cs.contains(target))
+            );
+            if (isCSSwap) {{
+                _syncCountDropdown();
+                ns.applyAllViewportSettings();
+            }}
+        }}
+
+        window.{handler_key} = {{ swap: _afterSwapHandler, settle: _afterSettleHandler }};
+        document.body.addEventListener('htmx:afterSwap', _afterSwapHandler);
+        document.body.addEventListener('htmx:afterSettle', _afterSettleHandler);
 
         // === Initialize ===
         requestAnimationFrame(function() {{

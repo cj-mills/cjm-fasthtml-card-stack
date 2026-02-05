@@ -108,8 +108,14 @@ def generate_touch_nav_js(
 
         function setupTouchNavigation() {{
             const cardStack = document.getElementById('{ids.card_stack}');
-            if (!cardStack || cardStack._touchNavSetup) return;
-            cardStack._touchNavSetup = true;
+            if (!cardStack) return;
+
+            // Abort previous listeners (handles re-setup from afterSettle
+            // and IIFE re-execution from HTMX page navigation).
+            if (cardStack._touchNavAbort) cardStack._touchNavAbort.abort();
+            const controller = new AbortController();
+            cardStack._touchNavAbort = controller;
+            const sig = {{ signal: controller.signal }};
 
             cardStack.addEventListener('pointerdown', function(evt) {{
                 if (evt.pointerType !== 'touch') return;
@@ -145,7 +151,7 @@ def generate_touch_nav_js(
                     _touchState.history = [];
                     _touchState.stepDistance = _getTouchStepDistance();
                 }}
-            }});
+            }}, sig);
 
             cardStack.addEventListener('pointermove', function(evt) {{
                 if (evt.pointerType !== 'touch') return;
@@ -211,7 +217,7 @@ def generate_touch_nav_js(
                     _touchState.lastStepY += (stepDelta < 0 ? -1 : 1) * _touchState.stepDistance;
                     _touchState.stepsTriggered++;
                 }}
-            }});
+            }}, sig);
 
             cardStack.addEventListener('pointerup', function(evt) {{
                 if (evt.pointerType !== 'touch') return;
@@ -296,7 +302,7 @@ def generate_touch_nav_js(
 
                     _touchState.momentumId = requestAnimationFrame(momentumTick);
                 }}
-            }});
+            }}, sig);
 
             cardStack.addEventListener('pointercancel', function(evt) {{
                 if (evt.pointerType !== 'touch') return;
@@ -307,7 +313,7 @@ def generate_touch_nav_js(
                     _touchState.isPinching = false;
                     _stopMomentum();
                 }}
-            }});
+            }}, sig);
         }}
 
         // Expose for master coordinator

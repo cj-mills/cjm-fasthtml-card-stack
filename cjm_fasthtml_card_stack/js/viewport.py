@@ -23,6 +23,8 @@ def generate_viewport_height_js(
     much vertical space the remaining content occupies, then set the card
     stack height to fill the remaining viewport space.
     """
+    handler_key = f"_csResizeHandler_{ids.prefix.replace('-', '_')}"
+
     # Build container resolution logic — guarded against null for SPA navigation
     if container_id:
         container_resolution = f"""
@@ -117,10 +119,13 @@ def generate_viewport_height_js(
             if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
         }}, 100);
 
-        if (!window._csResizeListener_{ids.prefix.replace('-', '_')}) {{
-            window._csResizeListener_{ids.prefix.replace('-', '_')} = true;
-            window.addEventListener('resize', _debouncedResize);
+        // Remove old resize listener from previous IIFE (handles HTMX page
+        // navigation that re-executes this script without a full page reload).
+        if (window.{handler_key}) {{
+            window.removeEventListener('resize', window.{handler_key});
         }}
+        window.{handler_key} = _debouncedResize;
+        window.addEventListener('resize', _debouncedResize);
 
         // Expose on namespace
         ns.recalculateHeight = calculateAndSetViewportHeight;

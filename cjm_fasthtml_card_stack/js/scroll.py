@@ -52,8 +52,13 @@ def generate_scroll_nav_js(
         {mode_check}
         function setupScrollNavigation() {{
             const cardStack = document.getElementById('{ids.card_stack}');
-            if (!cardStack || cardStack._scrollNavSetup) return;
-            cardStack._scrollNavSetup = true;
+            if (!cardStack) return;
+
+            // Abort previous listeners (handles re-setup from afterSettle
+            // and IIFE re-execution from HTMX page navigation).
+            if (cardStack._scrollNavAbort) cardStack._scrollNavAbort.abort();
+            const controller = new AbortController();
+            cardStack._scrollNavAbort = controller;
 
             cardStack.addEventListener('wheel', function(evt) {{
                 {mode_guard}
@@ -94,7 +99,7 @@ def generate_scroll_nav_js(
                 }}
                 // else: real event during cooldown (e.g. trackpad) — keep
                 // accumulated delta so it fires on the next cooldown-passing event
-            }}, {{ passive: false }});
+            }}, {{ passive: false, signal: controller.signal }});
         }}
 
         // Expose for master coordinator to re-setup after swaps
