@@ -15,6 +15,8 @@ from cjm_fasthtml_tailwind.core.base import combine_classes
 from cjm_fasthtml_keyboard_navigation.core.manager import ZoneManager
 from cjm_fasthtml_keyboard_navigation.components.system import render_keyboard_system
 
+from cjm_fasthtml_card_stack.core.config import CardStackConfig
+from cjm_fasthtml_card_stack.core.html_ids import CardStackHtmlIds
 from cjm_fasthtml_card_stack.components.viewport import render_viewport
 from cjm_fasthtml_card_stack.components.controls import (
     render_width_slider, render_scale_slider, render_card_count_select
@@ -25,6 +27,47 @@ from cjm_fasthtml_card_stack.keyboard.actions import (
     create_card_stack_focus_zone, create_card_stack_nav_actions,
     build_card_stack_url_map, render_card_stack_action_buttons
 )
+
+
+def generate_scale_spacing_js(config, ids):
+    """Generate JS that adjusts card spacing proportionally to scale changes.
+
+    Patches ns.updateScale and ns.applyScale to also update section-gap
+    and slot-padding CSS custom properties based on the current scale value.
+    Uses the style config defaults as the base values at 100% scale.
+    """
+    prefix = config.prefix
+    style = config.style
+    # Parse base rem values from config defaults
+    base_gap = style.section_gap      # e.g. "1rem"
+    base_pad = style.slot_padding     # e.g. "0.25rem"
+    return f"""
+        (function() {{
+            const _baseGap = parseFloat('{base_gap}');
+            const _basePad = parseFloat('{base_pad}');
+
+            function _adjustSpacingForScale(scaleValue) {{
+                const cs = document.getElementById('{ids.card_stack}');
+                if (!cs) return;
+                const s = parseInt(scaleValue) / 100;
+                cs.style.setProperty('--{prefix}-section-gap', (_baseGap * s).toFixed(3) + 'rem');
+                cs.style.setProperty('--{prefix}-slot-padding', (_basePad * s).toFixed(3) + 'rem');
+            }}
+
+            const _origUpdateScale = ns.updateScale;
+            ns.updateScale = function(value) {{
+                _origUpdateScale(value);
+                _adjustSpacingForScale(value);
+            }};
+
+            const _origApplyScale = ns.applyScale;
+            ns.applyScale = function() {{
+                _origApplyScale();
+                const slider = document.getElementById('{ids.scale_slider}');
+                _adjustSpacingForScale(slider ? slider.value : 100);
+            }};
+        }})();
+    """
 
 
 def build_keyboard_system(config, btn_ids, ids, urls):
@@ -61,6 +104,7 @@ def render_demo_page(
     urls,
     container_id,
     progress_label="Item",
+    extra_scripts=(),
 ):
     """Render a standard card stack demo page.
 
@@ -80,6 +124,7 @@ def render_demo_page(
             urls=urls,
             container_id=container_id,
             focus_position=state.focus_position,
+            extra_scripts=extra_scripts,
         )
 
         return Div(

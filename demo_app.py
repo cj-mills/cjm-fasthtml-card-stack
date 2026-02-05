@@ -63,25 +63,21 @@ def main():
     print(f"  Custom demo: focus_position=1, click-to-focus, {len(custom['get_items']()):,} items")
 
     # Build page content factories using shared renderer
+    _page_keys = (
+        'title', 'description', 'config', 'ids', 'btn_ids', 'urls',
+        'container_id', 'progress_label', 'render_card', 'extra_scripts',
+    )
+
     basic_page = render_demo_page(**{
-        k: basic[k] for k in (
-            'title', 'description', 'config', 'ids', 'btn_ids', 'urls',
-            'container_id', 'progress_label', 'render_card',
-        )
+        k: basic[k] for k in _page_keys if k in basic
     }, state_getter=basic['get_state'], items_getter=basic['get_items'])
 
     bottom_page = render_demo_page(**{
-        k: bottom[k] for k in (
-            'title', 'description', 'config', 'ids', 'btn_ids', 'urls',
-            'container_id', 'progress_label', 'render_card',
-        )
+        k: bottom[k] for k in _page_keys if k in bottom
     }, state_getter=bottom['get_state'], items_getter=bottom['get_items'])
 
     custom_page = render_demo_page(**{
-        k: custom[k] for k in (
-            'title', 'description', 'config', 'ids', 'btn_ids', 'urls',
-            'container_id', 'progress_label', 'render_card',
-        )
+        k: custom[k] for k in _page_keys if k in custom
     }, state_getter=custom['get_state'], items_getter=custom['get_items'])
 
     # -------------------------------------------------------------------------

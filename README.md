@@ -19,7 +19,7 @@ pip install cjm_fasthtml_card_stack
     │   └── viewport.ipynb  # Card stack viewport with 3-section CSS Grid layout, slot rendering,
     ├── core/ (5)
     │   ├── button_ids.ipynb  # Prefix-based IDs for hidden keyboard action buttons.
-    │   ├── config.ipynb      # Configuration dataclass for card stack initialization.
+    │   ├── config.ipynb      # Configuration dataclasses for card stack initialization and visual styling.
     │   ├── constants.ipynb   # CSS class constants, type aliases, and default values for the card stack library.
     │   ├── html_ids.ipynb    # Prefix-based HTML ID generator for card stack DOM elements.
     │   └── models.ipynb      # Core dataclasses for card stack state, render context, and URL routing.
@@ -66,59 +66,59 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_html_ids
     components_controls --> core_config
+    components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
     components_viewport --> core_models
-    components_viewport --> core_html_ids
+    components_viewport --> helpers_focus
     components_viewport --> core_constants
     components_viewport --> core_config
-    components_viewport --> helpers_focus
     components_viewport --> components_states
+    components_viewport --> core_html_ids
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_models
-    js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_constants
     js_auto_adjust --> core_config
+    js_auto_adjust --> core_models
+    js_auto_adjust --> core_html_ids
     js_controls --> core_constants
+    js_controls --> core_config
     js_controls --> core_models
     js_controls --> core_html_ids
-    js_controls --> core_config
-    js_core --> js_scroll
-    js_core --> core_models
-    js_core --> core_html_ids
     js_core --> core_constants
-    js_core --> core_config
-    js_core --> js_touch
-    js_core --> js_navigation
     js_core --> js_controls
+    js_core --> core_models
     js_core --> core_button_ids
+    js_core --> js_touch
     js_core --> js_viewport
+    js_core --> js_scroll
+    js_core --> core_config
+    js_core --> js_navigation
     js_core --> js_auto_adjust
+    js_core --> core_html_ids
     js_navigation --> core_button_ids
+    js_scroll --> core_button_ids
     js_scroll --> core_constants
     js_scroll --> core_html_ids
-    js_scroll --> core_button_ids
+    js_touch --> core_button_ids
     js_touch --> core_constants
     js_touch --> core_html_ids
-    js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_models
-    keyboard_actions --> core_html_ids
-    keyboard_actions --> core_config
-    keyboard_actions --> js_core
     keyboard_actions --> core_button_ids
+    keyboard_actions --> core_models
+    keyboard_actions --> js_core
+    keyboard_actions --> core_config
+    keyboard_actions --> core_html_ids
     routes_handlers --> core_models
-    routes_handlers --> core_html_ids
-    routes_handlers --> core_config
+    routes_handlers --> components_progress
     routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
-    routes_handlers --> components_progress
-    routes_router --> core_models
-    routes_router --> core_html_ids
-    routes_router --> core_config
+    routes_handlers --> core_config
+    routes_handlers --> core_html_ids
     routes_router --> routes_handlers
+    routes_router --> core_models
+    routes_router --> core_config
+    routes_router --> core_html_ids
 ```
 
 *53 cross-module dependencies detected*
@@ -323,12 +323,14 @@ class CardStackButtonIds:
 
 ### Config (`config.ipynb`)
 
-> Configuration dataclass for card stack initialization.
+> Configuration dataclasses for card stack initialization and visual
+> styling.
 
 #### Import
 
 ``` python
 from cjm_fasthtml_card_stack.core.config import (
+    CardStackStyleConfig,
     CardStackConfig
 )
 ```
@@ -356,6 +358,27 @@ def _reset_prefix_counter() -> None
 
 ``` python
 @dataclass
+class CardStackStyleConfig:
+    "Visual styling for a card stack instance."
+    
+    section_gap: str = '1rem'  # Gap between cards in each section
+    slot_padding: str = '0.25rem'  # Padding around context card content
+    viewport_padding_x: str = '0.5rem'  # Horizontal outer container padding
+    viewport_padding_y: str = '0.5rem'  # Vertical outer container padding
+    focus_padding_x: str = '0.5rem'  # Horizontal focused section padding
+    focus_padding_b: str = '1rem'  # Bottom focused section padding
+    focus_shadow: str = _DEFAULT_FOCUS_SHADOW  # Shadow classes for focused card
+    focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused card
+    
+    def css_vars_style(
+            self,
+            prefix: str,  # Card stack instance prefix
+        ) -> str:  # Inline style string with CSS custom property declarations
+        "Generate CSS custom property declarations as an inline style string."
+```
+
+``` python
+@dataclass
 class CardStackConfig:
     "Initialization-time settings for a card stack instance."
     
@@ -370,12 +393,15 @@ class CardStackConfig:
     card_scale_step: int = 10  # Scale slider step (%)
     click_to_focus: bool = False  # Whether context cards get transparent click overlay
     disable_scroll_in_modes: Tuple[str, ...] = ()  # Mode names where scroll-to-nav is suppressed
+    style: CardStackStyleConfig = field(...)  # Visual styling config
 ```
 
 #### Variables
 
 ``` python
 _prefix_counter: int = 0
+_DEFAULT_FOCUS_SHADOW: str
+_DEFAULT_FOCUS_BORDER_RADIUS: str
 ```
 
 ### Constants (`constants.ipynb`)

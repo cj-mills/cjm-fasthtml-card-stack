@@ -7,6 +7,7 @@ from cjm_fasthtml_daisyui.components.data_display.badge import badge, badge_colo
 from cjm_fasthtml_daisyui.utilities.semantic_colors import bg_dui, text_dui
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.utilities.sizing import w
+from cjm_fasthtml_tailwind.utilities.typography import font_size
 from cjm_fasthtml_tailwind.core.base import combine_classes
 
 from cjm_fasthtml_card_stack.core.config import CardStackConfig
@@ -16,6 +17,7 @@ from cjm_fasthtml_card_stack.core.button_ids import CardStackButtonIds
 from cjm_fasthtml_card_stack.routes.router import init_card_stack_router
 
 from demos.data import SAMPLE_ITEMS
+from demos.shared import generate_scale_spacing_js
 
 
 def render_card(item, context: CardRenderContext):
@@ -45,8 +47,10 @@ def render_card(item, context: CardRenderContext):
             Div(index_badge, distance_label, cls=combine_classes(m.b(1))),
             P(
                 item,
-                cls=combine_classes(text_dui.base_content),
-                style="font-size: calc(0.875rem * var(--card-stack-scale, 100) / 100)",
+                cls=combine_classes(
+                    text_dui.base_content,
+                    font_size('[calc(0.875rem*var(--card-stack-scale,100)/100)]'),
+                ),
             ),
             cls=combine_classes(card_body, p(3)),
         ),
@@ -111,4 +115,5 @@ def setup(route_prefix="/custom"):
         title="Custom Focus Position",
         description="Focus at slot 1 (second from top). One context card above, rest below.",
         progress_label="Item",
+        extra_scripts=(generate_scale_spacing_js(config, ids),),
     )

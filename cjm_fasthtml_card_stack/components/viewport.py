@@ -10,12 +10,8 @@ from typing import Any, Callable, List, Optional
 
 from fasthtml.common import Div, Script, Hidden
 
-# DaisyUI utilities
-from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui
-from cjm_fasthtml_daisyui.utilities.border_radius import border_radius
-
 # Tailwind utilities
-from cjm_fasthtml_tailwind.utilities.effects import shadow
+from cjm_fasthtml_tailwind.utilities.effects import opacity
 from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
     flex_display, flex_direction, justify, items, gap, grid_display
 )
@@ -23,6 +19,7 @@ from cjm_fasthtml_tailwind.utilities.layout import overflow, position, inset, z
 from cjm_fasthtml_tailwind.utilities.interactivity import cursor, touch
 from cjm_fasthtml_tailwind.utilities.sizing import w, h
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
+from cjm_fasthtml_tailwind.utilities.transitions_and_animation import transition, duration, ease
 from cjm_fasthtml_tailwind.core.base import combine_classes
 
 # Local imports
@@ -91,6 +88,7 @@ def render_slot_card(
     is_focused = slot_index == focus_slot
     card_role: CardRole = "focused" if is_focused else "context"
     distance = slot_index - focus_slot
+    prefix = config.prefix
 
     # Determine placeholder type based on position relative to focus
     placeholder_type = "start" if slot_index < focus_slot else "end"
@@ -111,9 +109,9 @@ def render_slot_card(
         )
         content = render_card(card_items[item_index], context)
 
-    # Focus shadow styling for focused slot
+    # Focus styling from config
     focus_cls = combine_classes(
-        shadow.lg, shadow_dui.primary, border_radius.box
+        config.style.focus_shadow, config.style.focus_border_radius
     ) if is_focused else ""
 
     # Mode sync script in focused slot OOB updates
@@ -124,10 +122,10 @@ def render_slot_card(
     if config.click_to_focus and not is_focused and not is_placeholder:
         click_overlay = _render_click_overlay(item_index, urls)
 
-    # Slot container
+    # Slot container — context cards get configurable padding via CSS custom property
     slot_cls = combine_classes(
         "viewport-slot",
-        p(1) if not is_focused else "",
+        p(f'[var(--{prefix}-slot-padding)]') if not is_focused else "",
         w.full,
         focus_cls,
         position.relative if click_overlay else ""
@@ -155,6 +153,7 @@ def render_all_slots_oob(
     """Render all viewport sections with OOB swap for granular updates."""
     total_items = len(card_items)
     focus_slot = resolve_focus_slot(state.focus_position, state.visible_count)
+    prefix = config.prefix
 
     viewport_indices = calculate_viewport_window(
         state.focused_index, total_items, state.visible_count, state.focus_position
@@ -179,10 +178,10 @@ def render_all_slots_oob(
         else:
             after_cards.append(card_el)
 
-    # Section styling
+    # Section styling — gap via CSS custom property
     section_cls = lambda alignment: combine_classes(
         flex_display, flex_direction.col, alignment, items.center,
-        w.full, gap(4), overflow.hidden
+        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden
     )
 
     before_section = Div(
@@ -196,7 +195,11 @@ def render_all_slots_oob(
     focused_section = Div(
         focused_card, mode_sync,
         id=ids.viewport_section_focused,
-        cls=combine_classes(flex_display, justify.center, items.center, w.full, p.x(2), p.b(4)),
+        cls=combine_classes(
+            flex_display, justify.center, items.center, w.full,
+            p.x(f'[var(--{prefix}-focus-padding-x)]'),
+            p.b(f'[var(--{prefix}-focus-padding-b)]')
+        ),
         hx_swap_oob="innerHTML"
     )
 
@@ -236,6 +239,7 @@ def render_viewport(
     """Render the card stack viewport with 3-section CSS Grid layout."""
     total_items = len(card_items)
     focus_slot = resolve_focus_slot(state.focus_position, state.visible_count)
+    prefix = config.prefix
 
     viewport_indices = calculate_viewport_window(
         state.focused_index, total_items, state.visible_count, state.focus_position
@@ -260,10 +264,10 @@ def render_viewport(
         else:
             after_cards.append(card_el)
 
-    # Section styling helper
+    # Section styling — gap via CSS custom property
     section_cls = lambda alignment: combine_classes(
         flex_display, flex_direction.col, alignment, items.center,
-        w.full, gap(4), overflow.hidden
+        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden
     )
 
     before_section = Div(
@@ -275,7 +279,11 @@ def render_viewport(
     focused_section = Div(
         focused_card,
         id=ids.viewport_section_focused,
-        cls=combine_classes(flex_display, justify.center, items.center, w.full, p.x(2), p.b(4))
+        cls=combine_classes(
+            flex_display, justify.center, items.center, w.full,
+            p.x(f'[var(--{prefix}-focus-padding-x)]'),
+            p.b(f'[var(--{prefix}-focus-padding-b)]')
+        )
     )
 
     after_section = Div(
@@ -287,10 +295,23 @@ def render_viewport(
     # Grid template based on focus position intent (stable across count changes)
     grid_rows = _grid_template_rows(state.focus_position)
 
-    inner_cls = combine_classes(grid_display, w.full, h.full, m.x.auto, gap(4))
+    inner_cls = combine_classes(
+        grid_display, w.full, h.full, m.x.auto,
+        gap(f'[var(--{prefix}-section-gap)]')
+    )
     inner_style = f"grid-template-rows: {grid_rows}; max-width: {state.card_width}rem"
 
-    outer_cls = combine_classes(w.full, p.x(2), p.y(2), overflow.hidden, touch.none)
+    # Outer container: padding via CSS custom properties, opacity reveal via Tailwind classes
+    outer_cls = combine_classes(
+        w.full,
+        p.x(f'[var(--{prefix}-viewport-padding-x)]'),
+        p.y(f'[var(--{prefix}-viewport-padding-y)]'),
+        overflow.hidden, touch.none,
+        opacity(0), transition.opacity, duration(150), ease._in
+    )
+
+    # CSS custom property declarations on outer container
+    outer_style = config.style.css_vars_style(prefix)
 
     # Hidden input for focused index (needed for keyboard nav hx-include and OOB updates)
     focused_input = Hidden(
@@ -312,7 +333,7 @@ def render_viewport(
         focused_input,
         id=ids.card_stack,
         cls=outer_cls,
-        style="opacity: 0; transition: opacity 150ms ease-in",
+        style=outer_style,
         data_focused_index=str(state.focused_index),
         data_total_items=str(total_items),
         data_visible_count=str(state.visible_count)

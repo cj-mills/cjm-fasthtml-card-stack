@@ -19,6 +19,7 @@ from cjm_fasthtml_card_stack.core.button_ids import CardStackButtonIds
 from cjm_fasthtml_card_stack.routes.router import init_card_stack_router
 
 from demos.data import SAMPLE_ITEMS
+from demos.shared import generate_scale_spacing_js
 
 
 def render_card(item, context: CardRenderContext):
@@ -38,8 +39,8 @@ def render_card(item, context: CardRenderContext):
         cls=combine_classes(
             font_weight.medium if is_focused else font_weight.normal,
             text_dui.base_content,
+            font_size('[calc(1rem*var(--card-stack-scale,100)/100)]'),
         ),
-        style="font-size: calc(1rem * var(--card-stack-scale, 100) / 100)",
     )
 
     return Div(
@@ -48,7 +49,7 @@ def render_card(item, context: CardRenderContext):
                 index_badge,
                 Span(
                     f"Item {context.index + 1} of {context.total_items}",
-                    cls=combine_classes(font_size.xs, text_dui.base_content, str(opacity(60))),
+                    cls=combine_classes(font_size.xs, text_dui.base_content, opacity(60)),
                 ),
                 cls=combine_classes(flex_display, items.center, gap(2), m.b(2)),
             ),
@@ -57,7 +58,7 @@ def render_card(item, context: CardRenderContext):
         ),
         cls=combine_classes(
             card,
-            bg_dui.base_100,# if is_focused else bg_dui.base_200,
+            bg_dui.base_100,
             w.full,
         ),
     )
@@ -112,4 +113,5 @@ def setup(route_prefix="/basic"):
         title="Basic Card Stack",
         description="Centered focus. Navigate with arrow keys, scroll wheel, or click any card.",
         progress_label="Item",
+        extra_scripts=(generate_scale_spacing_js(config, ids),),
     )
