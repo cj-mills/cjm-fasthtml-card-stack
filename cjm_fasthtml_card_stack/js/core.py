@@ -367,6 +367,10 @@ def _generate_auto_adjust_js(
                 _revealNewItems();
                 _autoGrowing = false;
                 _preGrowthItemIds = null;
+                // Continue to check if there's still room for more
+                requestAnimationFrame(function() {{
+                    ns._runAutoAdjust();
+                }});
             }}
         }}
 
