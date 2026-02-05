@@ -25,19 +25,21 @@ pip install cjm_fasthtml_card_stack
     │   └── models.ipynb      # Core dataclasses for card stack state, render context, and URL routing.
     ├── helpers/ (1)
     │   └── focus.ipynb  # Focus position resolution, viewport window calculation, and OOB focus sync.
-    ├── js/ (5)
-    │   ├── core.ipynb        # Master composer for card stack JavaScript. Combines viewport height,
-    │   ├── navigation.ipynb  # JavaScript generator for page jump and first/last navigation helpers.
-    │   ├── scroll.ipynb      # JavaScript generator for scroll-to-nav conversion.
-    │   ├── touch.ipynb       # JavaScript generator for touch-to-nav conversion: swipe, drag,
-    │   └── viewport.ipynb    # JavaScript generator for dynamic viewport height calculation.
+    ├── js/ (7)
+    │   ├── auto_adjust.ipynb  # JavaScript generator for automatic visible card count adjustment.
+    │   ├── controls.ipynb     # JavaScript generators for width, scale, and card count management.
+    │   ├── core.ipynb         # Master composer for card stack JavaScript. Combines viewport height,
+    │   ├── navigation.ipynb   # JavaScript generator for page jump and first/last navigation helpers.
+    │   ├── scroll.ipynb       # JavaScript generator for scroll-to-nav conversion.
+    │   ├── touch.ipynb        # JavaScript generator for touch-to-nav conversion: swipe, drag,
+    │   └── viewport.ipynb     # JavaScript generator for dynamic viewport height calculation.
     ├── keyboard/ (1)
     │   └── actions.ipynb  # Keyboard navigation focus zone and action factories for the card stack.
     └── routes/ (2)
         ├── handlers.ipynb  # Response builder functions for card stack operations (Tier 1 API).
         └── router.ipynb    # Convenience router factory that wires up standard card stack routes (Tier 2 API).
 
-Total: 18 notebooks across 6 directories
+Total: 20 notebooks across 6 directories
 
 ## Module Dependencies
 
@@ -53,6 +55,8 @@ graph LR
     core_html_ids[core.html_ids<br/>HTML IDs]
     core_models[core.models<br/>Models]
     helpers_focus[helpers.focus<br/>Focus]
+    js_auto_adjust[js.auto_adjust<br/>JS: Auto Adjust]
+    js_controls[js.controls<br/>JS: Controls]
     js_core[js.core<br/>JS: Core]
     js_navigation[js.navigation<br/>JS: Page Navigation]
     js_scroll[js.scroll<br/>JS: Scroll Navigation]
@@ -68,46 +72,56 @@ graph LR
     components_states --> core_html_ids
     components_viewport --> core_models
     components_viewport --> core_html_ids
-    components_viewport --> components_states
     components_viewport --> core_constants
     components_viewport --> core_config
     components_viewport --> helpers_focus
+    components_viewport --> components_states
     helpers_focus --> core_html_ids
-    js_core --> core_button_ids
-    js_core --> core_models
-    js_core --> core_constants
+    js_auto_adjust --> core_models
+    js_auto_adjust --> core_html_ids
+    js_auto_adjust --> core_constants
+    js_auto_adjust --> core_config
+    js_controls --> core_constants
+    js_controls --> core_models
+    js_controls --> core_html_ids
+    js_controls --> core_config
     js_core --> js_scroll
-    js_core --> js_navigation
+    js_core --> core_models
     js_core --> core_html_ids
-    js_core --> js_viewport
+    js_core --> core_constants
     js_core --> core_config
     js_core --> js_touch
+    js_core --> js_navigation
+    js_core --> js_controls
+    js_core --> core_button_ids
+    js_core --> js_viewport
+    js_core --> js_auto_adjust
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
-    js_touch --> core_button_ids
-    js_touch --> core_html_ids
+    js_scroll --> core_button_ids
     js_touch --> core_constants
+    js_touch --> core_html_ids
+    js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_button_ids
-    keyboard_actions --> js_core
+    keyboard_actions --> core_models
     keyboard_actions --> core_html_ids
     keyboard_actions --> core_config
-    keyboard_actions --> core_models
-    routes_handlers --> components_progress
+    keyboard_actions --> js_core
+    keyboard_actions --> core_button_ids
     routes_handlers --> core_models
-    routes_handlers --> components_viewport
     routes_handlers --> core_html_ids
     routes_handlers --> core_config
+    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
-    routes_router --> routes_handlers
+    routes_handlers --> components_progress
     routes_router --> core_models
     routes_router --> core_html_ids
     routes_router --> core_config
+    routes_router --> routes_handlers
 ```
 
-*43 cross-module dependencies detected*
+*53 cross-module dependencies detected*
 
 ## CLI Reference
 
@@ -184,6 +198,28 @@ def render_card_stack_action_buttons(
     These are clicked programmatically by the card stack's JS functions.
     Must be included in the DOM alongside the keyboard system's own buttons.
     """
+```
+
+### JS: Auto Adjust (`auto_adjust.ipynb`)
+
+> JavaScript generator for automatic visible card count adjustment.
+
+#### Import
+
+``` python
+from cjm_fasthtml_card_stack.js.auto_adjust import *
+```
+
+#### Functions
+
+``` python
+def _generate_auto_adjust_js(
+    ids: CardStackHtmlIds,  # HTML IDs for this instance
+    config: CardStackConfig,  # Config for auto mode check
+    urls: CardStackUrls,  # URL bundle (update_viewport)
+    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
+) -> str:  # JS code fragment for auto visible count adjustment
+    "Generate JS for automatic visible count adjustment based on overflow detection."
 ```
 
 ### Button IDs (`button_ids.ipynb`)
@@ -459,17 +495,14 @@ def render_card_count_select(
     "Render the card count dropdown selector."
 ```
 
-### JS: Core (`core.ipynb`)
+### JS: Controls (`controls.ipynb`)
 
-> Master composer for card stack JavaScript. Combines viewport height,
+> JavaScript generators for width, scale, and card count management.
 
 #### Import
 
 ``` python
-from cjm_fasthtml_card_stack.js.core import (
-    global_callback_name,
-    generate_card_stack_js
-)
+from cjm_fasthtml_card_stack.js.controls import *
 ```
 
 #### Functions
@@ -501,15 +534,20 @@ def _generate_card_count_mgmt_js(
     "Generate JS for card count selector management."
 ```
 
+### JS: Core (`core.ipynb`)
+
+> Master composer for card stack JavaScript. Combines viewport height,
+
+#### Import
+
 ``` python
-def _generate_auto_adjust_js(
-    ids: CardStackHtmlIds,  # HTML IDs for this instance
-    config: CardStackConfig,  # Config for auto mode check
-    urls: CardStackUrls,  # URL bundle (update_viewport)
-    focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
-) -> str:  # JS code fragment for auto visible count adjustment
-    "Generate JS for automatic visible count adjustment based on overflow detection."
+from cjm_fasthtml_card_stack.js.core import (
+    global_callback_name,
+    generate_card_stack_js
+)
 ```
+
+#### Functions
 
 ``` python
 def _generate_coordinator_js(
