@@ -52,10 +52,17 @@ class CardStackHtmlIds:
 
     def viewport_slot(
         self,
-        index: int  # Slot index within the viewport
-    ) -> str:  # Slot element ID
-        """ID for an individual viewport slot container."""
-        return f"{self.prefix}-viewport-slot-{index}"
+        item_index: int  # Item index in the data list
+    ) -> str:  # Slot element ID tied to item identity
+        """ID for a viewport slot containing a real item."""
+        return f"{self.prefix}-item-slot-{item_index}"
+
+    def viewport_placeholder(
+        self,
+        slot_index: int  # Slot position within the viewport
+    ) -> str:  # Placeholder element ID tied to position
+        """ID for a placeholder slot at the edge of the list."""
+        return f"{self.prefix}-placeholder-slot-{slot_index}"
 
     # --- Controls ---
 

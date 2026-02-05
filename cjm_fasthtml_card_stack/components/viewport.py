@@ -85,7 +85,9 @@ def render_slot_card(
     oob: bool = False,  # Whether to render as OOB swap
 ) -> Any:  # Slot content wrapper
     """Render a single card for a viewport slot."""
-    slot_id = ids.viewport_slot(slot_index)
+    slot_id = (ids.viewport_placeholder(slot_index)
+               if item_index is None
+               else ids.viewport_slot(item_index))
     is_focused = slot_index == focus_slot
     card_role: CardRole = "focused" if is_focused else "context"
     total_items = len(card_items)

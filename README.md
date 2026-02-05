@@ -62,49 +62,49 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_config
     components_controls --> core_html_ids
+    components_controls --> core_config
     components_progress --> core_html_ids
     components_states --> core_html_ids
     components_viewport --> core_models
     components_viewport --> helpers_focus
     components_viewport --> components_states
+    components_viewport --> core_html_ids
     components_viewport --> core_constants
     components_viewport --> core_config
-    components_viewport --> core_html_ids
     helpers_focus --> core_html_ids
     js_core --> core_constants
-    js_core --> core_button_ids
-    js_core --> js_viewport
-    js_core --> js_touch
     js_core --> js_navigation
     js_core --> core_models
-    js_core --> core_config
-    js_core --> js_scroll
+    js_core --> js_viewport
+    js_core --> core_button_ids
     js_core --> core_html_ids
+    js_core --> js_touch
+    js_core --> js_scroll
+    js_core --> core_config
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
+    js_scroll --> core_button_ids
     js_touch --> core_constants
-    js_touch --> core_button_ids
     js_touch --> core_html_ids
+    js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_button_ids
-    keyboard_actions --> core_models
-    keyboard_actions --> core_config
     keyboard_actions --> js_core
+    keyboard_actions --> core_models
+    keyboard_actions --> core_button_ids
     keyboard_actions --> core_html_ids
-    routes_handlers --> components_progress
-    routes_handlers --> core_models
+    keyboard_actions --> core_config
     routes_handlers --> components_viewport
-    routes_handlers --> helpers_focus
-    routes_handlers --> core_config
+    routes_handlers --> core_models
+    routes_handlers --> components_progress
     routes_handlers --> core_html_ids
+    routes_handlers --> core_config
+    routes_handlers --> helpers_focus
     routes_router --> core_models
     routes_router --> routes_handlers
-    routes_router --> core_config
     routes_router --> core_html_ids
+    routes_router --> core_config
 ```
 
 *43 cross-module dependencies detected*
@@ -765,15 +765,21 @@ class CardStackHtmlIds:
     
         def viewport_slot(
             self,
-            index: int  # Slot index within the viewport
-        ) -> str:  # Slot element ID
+            item_index: int  # Item index in the data list
+        ) -> str:  # Slot element ID tied to item identity
         "Viewport section for context cards after focused card."
     
     def viewport_slot(
             self,
-            index: int  # Slot index within the viewport
-        ) -> str:  # Slot element ID
-        "ID for an individual viewport slot container."
+            item_index: int  # Item index in the data list
+        ) -> str:  # Slot element ID tied to item identity
+        "ID for a viewport slot containing a real item."
+    
+    def viewport_placeholder(
+            self,
+            slot_index: int  # Slot position within the viewport
+        ) -> str:  # Placeholder element ID tied to position
+        "ID for a placeholder slot at the edge of the list."
     
     def card_count_select(self) -> str:  # Card count dropdown
             """Card count selector dropdown."""
