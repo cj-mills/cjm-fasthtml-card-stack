@@ -255,6 +255,8 @@ def _generate_auto_adjust_js(
 
         function _getAutoSectionOverflow() {{
             // Returns max overflow (px) across relevant sections.
+            // Before section uses justify-end, so content overflows upward (out the top).
+            // After section uses justify-start, so content overflows downward (out the bottom).
             const before = document.getElementById('{ids.viewport_section_before}');
             const after = document.getElementById('{ids.viewport_section_after}');
             let maxOverflow = 0;
@@ -262,14 +264,24 @@ def _generate_auto_adjust_js(
             const checkBefore = (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS > 0 || _AUTO_FOCUS_POS < 0);
             const checkAfter = (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS >= 0);
 
-            if (checkBefore && before) {{
-                const o = before.scrollHeight - before.clientHeight;
+            // Before section: check if first child extends above container top
+            if (checkBefore && before && before.children.length > 0) {{
+                const sRect = before.getBoundingClientRect();
+                const firstChild = before.children[0];
+                const childRect = firstChild.getBoundingClientRect();
+                const o = sRect.top - childRect.top;  // positive if child above container
                 if (o > maxOverflow) maxOverflow = o;
             }}
-            if (checkAfter && after) {{
-                const o = after.scrollHeight - after.clientHeight;
+
+            // After section: check if last child extends below container bottom
+            if (checkAfter && after && after.children.length > 0) {{
+                const sRect = after.getBoundingClientRect();
+                const lastChild = after.children[after.children.length - 1];
+                const childRect = lastChild.getBoundingClientRect();
+                const o = childRect.bottom - sRect.bottom;  // positive if child below container
                 if (o > maxOverflow) maxOverflow = o;
             }}
+
             return maxOverflow;
         }}
 
