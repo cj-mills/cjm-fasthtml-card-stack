@@ -239,9 +239,9 @@ def _generate_auto_adjust_js(
 
         // --- Growth validation state ---
         let _autoGrowing = false;
+        let _autoReverting = false;
         let _preGrowthItemIds = null;
         let _preGrowthCount = 0;
-        let _autoGrowthFailed = false;
 
         function _getAutoCurrentCount() {{
             const cs = document.getElementById('{ids.card_stack}');
@@ -304,31 +304,6 @@ def _generate_auto_adjust_js(
             return parseFloat(getComputedStyle(section).gap) || 16;
         }}
 
-        function _getAutoRemainingSpace() {{
-            // Measure remaining space in relevant sections (no overflow case).
-            const before = document.getElementById('{ids.viewport_section_before}');
-            const after = document.getElementById('{ids.viewport_section_after}');
-            let space = 0;
-
-            if (before && before.children.length > 0 &&
-                (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS > 0 || _AUTO_FOCUS_POS < 0)) {{
-                const sRect = before.getBoundingClientRect();
-                const first = before.children[0].getBoundingClientRect();
-                const gap = first.top - sRect.top;
-                if (gap > 0) space += gap;
-            }}
-
-            if (after && after.children.length > 0 &&
-                (_AUTO_FOCUS_POS === null || _AUTO_FOCUS_POS >= 0)) {{
-                const sRect = after.getBoundingClientRect();
-                const last = after.children[after.children.length - 1].getBoundingClientRect();
-                const gap = sRect.bottom - last.bottom;
-                if (gap > 0) space += gap;
-            }}
-
-            return space;
-        }}
-
         // --- Growth validation helpers ---
 
         function _snapshotItemIds() {{
@@ -368,9 +343,9 @@ def _generate_auto_adjust_js(
         function _validateGrowth() {{
             const overflow = _getAutoSectionOverflow();
             if (overflow > 2) {{
-                // Growth caused overflow — revert to pre-growth count
-                _autoGrowthFailed = true;
+                // Growth caused overflow — revert to pre-growth count and stop
                 _autoGrowing = false;
+                _autoReverting = true;
                 _preGrowthItemIds = null;
                 _autoAdjusting = true;
                 ns._autoUpdateCount(_preGrowthCount);
@@ -393,11 +368,17 @@ def _generate_auto_adjust_js(
                 _preGrowthItemIds = null;
                 _preGrowthCount = 0;
             }}
-            _autoGrowthFailed = false;
+            _autoReverting = false;
         }};
 
         ns._runAutoAdjust = function() {{
             if (!_isAutoMode() || _autoAdjusting) return;
+
+            // If we just reverted from a failed growth, stop the loop
+            if (_autoReverting) {{
+                _autoReverting = false;
+                return;
+            }}
 
             // If in growth validation cycle, validate instead of normal adjust
             if (_autoGrowing) {{
@@ -425,16 +406,10 @@ def _generate_auto_adjust_js(
                     ns._autoUpdateCount(newCount);
                 }}
             }} else {{
-                // No overflow — check if we can add more
+                // No overflow — try to add more cards incrementally
                 if (currentCount >= totalItems) return;
-                if (_autoGrowthFailed) return;
 
-                const remaining = _getAutoRemainingSpace();
-                const toAdd = Math.floor(remaining / (avgHeight + gapPx));
-                const adjusted = (_AUTO_FOCUS_POS === null)
-                    ? Math.max(_AUTO_STEP, Math.floor(toAdd / 2) * 2)
-                    : Math.max(_AUTO_STEP, toAdd);
-                const newCount = Math.min(totalItems, currentCount + adjusted);
+                const newCount = Math.min(totalItems, currentCount + _AUTO_STEP);
                 if (newCount > currentCount) {{
                     // Snapshot current state before growth
                     _preGrowthCount = currentCount;
@@ -450,7 +425,7 @@ def _generate_auto_adjust_js(
             // Debounced entry point for external triggers (resize, width, scale).
             if (!_isAutoMode()) return;
             clearTimeout(_autoAdjustTimer);
-            _autoGrowthFailed = false;
+            _autoReverting = false;
             _autoAdjustTimer = setTimeout(function() {{
                 ns._runAutoAdjust();
             }}, 200);
