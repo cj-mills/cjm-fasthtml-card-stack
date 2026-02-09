@@ -44,31 +44,20 @@ def generate_viewport_height_js(
                 const parentStyles = getComputedStyle(parent);
                 spaceUsedBelow += parseFloat(parentStyles.paddingBottom) || 0;
                 spaceUsedBelow += parseFloat(parentStyles.borderBottomWidth) || 0;
-
-                // Skip sibling heights when parent uses horizontal flex layout
-                // (siblings are side-by-side, not stacked vertically).
-                // Uses computed style so responsive breakpoints (e.g. lg:flex-row)
-                // are handled automatically.
-                const flexDir = parentStyles.flexDirection;
-                const isHorizontal = flexDir === 'row' || flexDir === 'row-reverse';
-
-                if (!isHorizontal) {{
-                    let foundCurrent = false;
-                    for (const sibling of parent.children) {{
-                        if (sibling === currentElement) {{ foundCurrent = true; continue; }}
-                        if (!foundCurrent) continue;
-                        if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
-                        const tag = sibling.tagName;
-                        if (tag === 'SCRIPT' || tag === 'STYLE') continue;
-                        if (tag === 'INPUT' && sibling.type === 'hidden') continue;
-                        const s = getComputedStyle(sibling);
-                        if (s.display === 'none') continue;
-                        const mt = parseFloat(s.marginTop) || 0;
-                        const mb = parseFloat(s.marginBottom) || 0;
-                        spaceUsedBelow += sibling.getBoundingClientRect().height + mt + mb;
-                    }}
+                let foundCurrent = false;
+                for (const sibling of parent.children) {{
+                    if (sibling === currentElement) {{ foundCurrent = true; continue; }}
+                    if (!foundCurrent) continue;
+                    if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
+                    const tag = sibling.tagName;
+                    if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+                    if (tag === 'INPUT' && sibling.type === 'hidden') continue;
+                    const s = getComputedStyle(sibling);
+                    if (s.display === 'none') continue;
+                    const mt = parseFloat(s.marginTop) || 0;
+                    const mb = parseFloat(s.marginBottom) || 0;
+                    spaceUsedBelow += sibling.getBoundingClientRect().height + mt + mb;
                 }}
-
                 currentElement = parent;
                 parent = parent.parentElement;
             }}
