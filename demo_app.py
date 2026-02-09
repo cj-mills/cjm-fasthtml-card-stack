@@ -34,6 +34,7 @@ def main():
     import demos.basic as basic_demo
     import demos.bottom as bottom_demo
     import demos.custom_position as custom_demo
+    import demos.dual as dual_demo
 
     print("\n" + "=" * 70)
     print("Initializing cjm-fasthtml-card-stack Demo")
@@ -57,10 +58,12 @@ def main():
     basic = basic_demo.setup()
     bottom = bottom_demo.setup()
     custom = custom_demo.setup()
+    dual = dual_demo.setup()
 
     print(f"  Basic demo: centered, click-to-focus, {len(basic['get_items']()):,} items")
     print(f"  Bottom demo: bottom-anchored, click-to-focus, {len(bottom['get_items']()):,} items")
     print(f"  Custom demo: focus_position=1, click-to-focus, {len(custom['get_items']()):,} items")
+    print(f"  Dual demo: two stacks side-by-side, {len(dual['get_text_items']()):,} text + {len(dual['get_audio_items']()):,} audio")
 
     # Build page content factories using shared renderer
     _page_keys = (
@@ -129,8 +132,18 @@ def main():
                         href=demo_custom.to(),
                         btn_cls="btn btn-accent",
                     ),
+                    _demo_card(
+                        "Dual Card Stack",
+                        "Two independent card stacks side by side with Left/Right "
+                        "zone switching. Tests multi-instance viewport calculation.",
+                        badges=[("Two stacks", badge_colors.primary),
+                                ("Zone switching", badge_colors.secondary),
+                                (f"{len(dual['get_text_items']()):,} + {len(dual['get_audio_items']()):,}", badge_colors.accent)],
+                        href=demo_dual.to(),
+                        btn_cls="btn btn-info",
+                    ),
                     cls=combine_classes(
-                        grid_display, grid_cols(1), grid_cols(3).md, gap(6), m.b(8)
+                        grid_display, grid_cols(1), grid_cols(2).md, gap(6), m.b(8)
                     )
                 ),
 
@@ -202,6 +215,14 @@ def main():
             wrap_fn=lambda content: wrap_with_layout(content, navbar=navbar)
         )
 
+    @router
+    def demo_dual(request):
+        """Dual card stack demo with zone switching."""
+        return handle_htmx_request(
+            request, dual['page_content'],
+            wrap_fn=lambda content: wrap_with_layout(content, navbar=navbar)
+        )
+
     # -------------------------------------------------------------------------
     # Navbar & route registration
     # -------------------------------------------------------------------------
@@ -212,12 +233,17 @@ def main():
             ("Basic", demo_basic),
             ("Bottom-Anchored", demo_bottom),
             ("Custom Position", demo_custom),
+            ("Dual", demo_dual),
         ],
         home_route=index,
         theme_selector=True
     )
 
-    register_routes(app, router, basic['router'], bottom['router'], custom['router'])
+    register_routes(
+        app, router,
+        basic['router'], bottom['router'], custom['router'],
+        dual['text_router'], dual['audio_router']
+    )
 
     # Debug output
     print("\n" + "=" * 70)
@@ -249,6 +275,7 @@ if __name__ == "__main__":
     print(f"  http://{display_host}:{port}/demo_basic    — Basic centered")
     print(f"  http://{display_host}:{port}/demo_bottom   — Bottom-anchored")
     print(f"  http://{display_host}:{port}/demo_custom   — Custom position (slot 1)")
+    print(f"  http://{display_host}:{port}/demo_dual     — Dual stacks with zone switching")
     print()
 
     timer = threading.Timer(1.5, lambda: webbrowser.open(f"http://localhost:{port}"))

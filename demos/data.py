@@ -27,3 +27,23 @@ SAMPLE_ITEMS = [
     "Transfer learning allows a model pretrained on a large dataset to be fine-tuned on a smaller, task-specific dataset. This dramatically reduces the data and compute needed for new tasks.",
     "The field continues to evolve rapidly, with active research in areas like multimodal learning, efficient architectures, alignment, interpretability, and learning from human feedback.",
 ]
+
+# Simulated VAD (Voice Activity Detection) audio chunks with timestamps
+# Format: (start_seconds, end_seconds, label)
+SAMPLE_AUDIO_CHUNKS = [
+    (0.0, 3.2, "Speech detected"),
+    (3.8, 7.1, "Speech detected"),
+    (7.5, 12.4, "Speech detected"),
+    (13.0, 15.8, "Speech detected"),
+    (16.2, 21.5, "Speech detected"),
+    (22.0, 26.3, "Speech detected"),
+    (27.1, 31.9, "Speech detected"),
+    (32.5, 38.2, "Speech detected"),
+    (39.0, 44.7, "Speech detected"),
+    (45.3, 50.1, "Speech detected"),
+    (51.0, 56.8, "Speech detected"),
+    (57.5, 62.3, "Speech detected"),
+    (63.0, 68.9, "Speech detected"),
+    (69.5, 75.2, "Speech detected"),
+    (76.0, 81.4, "Speech detected"),
+]

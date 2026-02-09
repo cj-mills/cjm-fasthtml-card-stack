@@ -15,13 +15,15 @@ def generate_viewport_height_js(
 ) -> str:  # JavaScript code fragment for viewport height calculation
     """Generate JS for dynamic viewport height calculation.
 
-    Computes sibling space by subtracting the card stack's current height
-    from the container's current height. This avoids layout distortion that
-    occurs with collapse-and-measure when the card stack is nested inside
-    intermediate flex-grow containers (e.g., dual-column layouts where
-    sibling columns keep the container inflated during collapse).
+    Computes sibling space by measuring actual sibling elements within
+    the container. This works correctly in flex layouts where sibling
+    columns can inflate the container height.
+
+    Debug mode: Set `window.cardStackDebug = true` in browser console
+    to log all intermediate calculation values.
     """
     handler_key = f"_csResizeHandler_{ids.prefix.replace('-', '_')}"
+    prefix = ids.prefix
 
     # Build container resolution logic — guarded against null for SPA navigation
     if container_id:
@@ -35,15 +37,27 @@ def generate_viewport_height_js(
 
     return f"""
         // === Viewport Height Calculation ===
+        const _debug = () => window.cardStackDebug === true;
+        const _log = (...args) => {{ if (_debug()) console.log('[{prefix}]', ...args); }};
 
         function calculateSpaceBelowContainer(container) {{
+            // Walk up the DOM tree and measure space used below the container.
+            // Only counts siblings that are actually positioned below (not beside
+            // in flex rows) by comparing bounding rect positions.
             let spaceUsedBelow = 0;
             let currentElement = container;
+            let currentRect = currentElement.getBoundingClientRect();
             let parent = container.parentElement;
+            let level = 0;
+
             while (parent && parent !== document.documentElement) {{
                 const parentStyles = getComputedStyle(parent);
-                spaceUsedBelow += parseFloat(parentStyles.paddingBottom) || 0;
-                spaceUsedBelow += parseFloat(parentStyles.borderBottomWidth) || 0;
+                const paddingBottom = parseFloat(parentStyles.paddingBottom) || 0;
+                const borderBottom = parseFloat(parentStyles.borderBottomWidth) || 0;
+                spaceUsedBelow += paddingBottom + borderBottom;
+
+                _log(`spaceBelow L${{level}}: parent=${{parent.tagName}}#${{parent.id || '(no id)'}}, padding=${{paddingBottom}}, border=${{borderBottom}}`);
+
                 let foundCurrent = false;
                 for (const sibling of parent.children) {{
                     if (sibling === currentElement) {{ foundCurrent = true; continue; }}
@@ -54,36 +68,86 @@ def generate_viewport_height_js(
                     if (tag === 'INPUT' && sibling.type === 'hidden') continue;
                     const s = getComputedStyle(sibling);
                     if (s.display === 'none') continue;
+
+                    // Only count siblings that are actually positioned below,
+                    // not beside (handles flex row layouts)
+                    const siblingRect = sibling.getBoundingClientRect();
+                    if (siblingRect.top < currentRect.bottom) {{
+                        _log(`  skip (beside): ${{tag}}#${{sibling.id || '(no id)'}}, top=${{siblingRect.top}} < bottom=${{currentRect.bottom}}`);
+                        continue;
+                    }}
+
                     const mt = parseFloat(s.marginTop) || 0;
                     const mb = parseFloat(s.marginBottom) || 0;
-                    spaceUsedBelow += sibling.getBoundingClientRect().height + mt + mb;
+                    spaceUsedBelow += siblingRect.height + mt + mb;
+                    _log(`  below: ${{tag}}#${{sibling.id || '(no id)'}}, h=${{siblingRect.height}}, margins=${{mt}}/${{mb}}`);
                 }}
+
                 currentElement = parent;
+                currentRect = currentElement.getBoundingClientRect();
                 parent = parent.parentElement;
+                level++;
             }}
             return spaceUsedBelow;
+        }}
+
+        function calculateSiblingSpace(container, cardStackId) {{
+            // Measure actual sibling elements within the container.
+            // This works correctly in flex layouts where sibling columns
+            // can inflate the container height.
+            let siblingSpace = 0;
+            for (const child of container.children) {{
+                if (child.id === cardStackId) continue;
+                if (child.nodeType !== Node.ELEMENT_NODE) continue;
+                const tag = child.tagName;
+                if (tag === 'SCRIPT' || tag === 'STYLE') continue;
+                if (tag === 'INPUT' && child.type === 'hidden') continue;
+                const s = getComputedStyle(child);
+                if (s.display === 'none') continue;
+                const rect = child.getBoundingClientRect();
+                const mt = parseFloat(s.marginTop) || 0;
+                const mb = parseFloat(s.marginBottom) || 0;
+                siblingSpace += rect.height + mt + mb;
+                _log(`sibling: ${{tag}}#${{child.id || '(no id)'}}, h=${{rect.height}}, margins=${{mt}}/${{mb}}`);
+            }}
+            return siblingSpace;
         }}
 
         function calculateAndSetViewportHeight() {{
             {container_resolution}
             const cardStack = document.getElementById('{ids.card_stack}');
             const cardStackInner = document.getElementById('{ids.card_stack_inner}');
-            if (!container || !cardStack) return 400;
+            if (!container || !cardStack) {{
+                _log('ERROR: container or cardStack not found');
+                return 400;
+            }}
 
-            // Compute sibling space by subtraction: everything in the
-            // container except the card stack.  This avoids collapsing
-            // the card stack to 0 which distorts flex layouts.
-            const containerRect = container.getBoundingClientRect();
-            const cardStackHeight = cardStack.getBoundingClientRect().height;
-            const siblingSpace = Math.max(0, containerRect.height - cardStackHeight);
+            _log('=== calculateAndSetViewportHeight ===');
+            _log('container:', container.id || '(no id)');
+
+            // Measure actual siblings within the container
+            const siblingSpace = calculateSiblingSpace(container, '{ids.card_stack}');
+
+            // Account for container padding
+            const containerStyle = getComputedStyle(container);
+            const containerPaddingTop = parseFloat(containerStyle.paddingTop) || 0;
+            const containerPaddingBottom = parseFloat(containerStyle.paddingBottom) || 0;
+            const containerPadding = containerPaddingTop + containerPaddingBottom;
 
             const windowHeight = window.innerHeight;
-            const containerTop = containerRect.top;
+            const containerTop = container.getBoundingClientRect().top;
             const spaceBelow = calculateSpaceBelowContainer(container);
 
-            const viewportHeight = Math.floor(Math.max(200,
-                windowHeight - containerTop - siblingSpace - spaceBelow
-            ));
+            const rawHeight = windowHeight - containerTop - siblingSpace - containerPadding - spaceBelow;
+            const viewportHeight = Math.floor(Math.max(200, rawHeight));
+
+            _log('windowHeight:', windowHeight);
+            _log('containerTop:', containerTop);
+            _log('siblingSpace:', siblingSpace);
+            _log('containerPadding:', containerPadding, `(${{containerPaddingTop}} + ${{containerPaddingBottom}})`);
+            _log('spaceBelow:', spaceBelow);
+            _log('rawHeight:', rawHeight);
+            _log('viewportHeight:', viewportHeight, rawHeight < 200 ? '(clamped to min)' : '');
 
             cardStack.style.height = viewportHeight + 'px';
             cardStack.style.maxHeight = viewportHeight + 'px';
