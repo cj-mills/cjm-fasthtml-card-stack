@@ -14,14 +14,12 @@ def generate_viewport_height_js(
     container_id: str = "",  # Consumer's parent container ID (empty = use card stack parent)
 ) -> str:  # JavaScript code fragment for viewport height calculation
     """Generate JS for dynamic viewport height calculation.
-    
-    Uses the browser's layout engine to measure the space consumed by sibling
-    elements rather than summing individual heights. This naturally handles
-    margin collapsing regardless of the container's display type.
-    
-    Strategy: temporarily collapse the card stack to 0 height, measure how
-    much vertical space the remaining content occupies, then set the card
-    stack height to fill the remaining viewport space.
+
+    Computes sibling space by subtracting the card stack's current height
+    from the container's current height. This avoids layout distortion that
+    occurs with collapse-and-measure when the card stack is nested inside
+    intermediate flex-grow containers (e.g., dual-column layouts where
+    sibling columns keep the container inflated during collapse).
     """
     handler_key = f"_csResizeHandler_{ids.prefix.replace('-', '_')}"
 
@@ -72,26 +70,12 @@ def generate_viewport_height_js(
             const cardStackInner = document.getElementById('{ids.card_stack_inner}');
             if (!container || !cardStack) return 400;
 
-            // Temporarily collapse the card stack to measure sibling space.
-            // Save current values to restore if something goes wrong.
-            const prevHeight = cardStack.style.height;
-            const prevMinHeight = cardStack.style.minHeight;
-            const prevMaxHeight = cardStack.style.maxHeight;
-            
-            cardStack.style.height = '0px';
-            cardStack.style.minHeight = '0px';
-            cardStack.style.maxHeight = '0px';
-
-            // Now measure: with the card stack collapsed, the container's
-            // height is driven entirely by the sibling content + padding.
-            // The browser handles margin collapsing for us.
+            // Compute sibling space by subtraction: everything in the
+            // container except the card stack.  This avoids collapsing
+            // the card stack to 0 which distorts flex layouts.
             const containerRect = container.getBoundingClientRect();
-            const siblingSpace = containerRect.height;
-
-            // Restore immediately (before any repaint)
-            cardStack.style.height = prevHeight;
-            cardStack.style.minHeight = prevMinHeight;
-            cardStack.style.maxHeight = prevMaxHeight;
+            const cardStackHeight = cardStack.getBoundingClientRect().height;
+            const siblingSpace = Math.max(0, containerRect.height - cardStackHeight);
 
             const windowHeight = window.innerHeight;
             const containerTop = containerRect.top;
