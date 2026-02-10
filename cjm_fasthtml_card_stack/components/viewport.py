@@ -111,7 +111,9 @@ def render_slot_card(
 
     # Focus styling from config
     focus_cls = combine_classes(
-        config.style.focus_shadow, config.style.focus_border_radius
+        config.style.focus_ring,
+        config.style.focus_shadow, 
+        config.style.focus_border_radius
     ) if is_focused else ""
 
     # Mode sync script in focused slot OOB updates

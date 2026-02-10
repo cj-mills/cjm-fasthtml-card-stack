@@ -9,9 +9,9 @@ __all__ = ['CardStackStyleConfig', 'CardStackConfig']
 from dataclasses import dataclass, field
 from typing import Tuple
 
-from cjm_fasthtml_tailwind.utilities.effects import shadow
+from cjm_fasthtml_tailwind.utilities.effects import ring, shadow
 from cjm_fasthtml_tailwind.core.base import combine_classes
-from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui
+from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui, ring_dui
 from cjm_fasthtml_daisyui.utilities.border_radius import border_radius
 
 # %% ../../nbs/core/config.ipynb #b1000005
@@ -30,6 +30,7 @@ def _reset_prefix_counter() -> None:
     _prefix_counter = 0
 
 # %% ../../nbs/core/config.ipynb #gygpoeocu9c
+_DEFAULT_FOCUS_RING: str = combine_classes(ring(1), ring_dui("color-mix(in_oklch,var(--color-primary),transparent_50%)"))
 _DEFAULT_FOCUS_SHADOW: str = combine_classes(shadow.lg, shadow_dui.primary)
 _DEFAULT_FOCUS_BORDER_RADIUS: str = str(border_radius.box)
 
@@ -46,6 +47,7 @@ class CardStackStyleConfig:
     focus_padding_b: str = "1rem"       # Bottom focused section padding
 
     # Visual emphasis (CSS class strings)
+    focus_ring: str = _DEFAULT_FOCUS_RING                    # Ring classes for focused card
     focus_shadow: str = _DEFAULT_FOCUS_SHADOW                # Shadow classes for focused card
     focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused card
 
