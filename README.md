@@ -70,54 +70,54 @@ graph LR
     components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_models
     components_viewport --> helpers_focus
-    components_viewport --> core_config
+    components_viewport --> core_models
     components_viewport --> components_states
-    components_viewport --> core_constants
+    components_viewport --> core_config
     components_viewport --> core_html_ids
+    components_viewport --> core_constants
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_constants
     js_auto_adjust --> core_models
+    js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_config
     js_controls --> core_constants
-    js_controls --> core_html_ids
     js_controls --> core_models
+    js_controls --> core_html_ids
     js_controls --> core_config
-    js_core --> js_navigation
     js_core --> core_constants
-    js_core --> core_models
     js_core --> js_controls
+    js_core --> js_navigation
+    js_core --> core_models
     js_core --> core_config
-    js_core --> core_button_ids
-    js_core --> js_scroll
-    js_core --> js_auto_adjust
-    js_core --> core_html_ids
-    js_core --> js_touch
     js_core --> js_viewport
+    js_core --> js_scroll
+    js_core --> core_html_ids
+    js_core --> core_button_ids
+    js_core --> js_touch
+    js_core --> js_auto_adjust
     js_navigation --> core_button_ids
-    js_scroll --> core_constants
     js_scroll --> core_html_ids
+    js_scroll --> core_constants
     js_scroll --> core_button_ids
     js_touch --> core_constants
     js_touch --> core_html_ids
     js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_models
     keyboard_actions --> core_config
-    keyboard_actions --> js_core
-    keyboard_actions --> core_button_ids
+    keyboard_actions --> core_models
     keyboard_actions --> core_html_ids
+    keyboard_actions --> core_button_ids
+    keyboard_actions --> js_core
+    routes_handlers --> helpers_focus
+    routes_handlers --> components_viewport
     routes_handlers --> core_models
     routes_handlers --> components_progress
     routes_handlers --> core_config
-    routes_handlers --> components_viewport
-    routes_handlers --> helpers_focus
     routes_handlers --> core_html_ids
+    routes_router --> routes_handlers
     routes_router --> core_models
     routes_router --> core_config
-    routes_router --> routes_handlers
     routes_router --> core_html_ids
 ```
 
@@ -1208,9 +1208,12 @@ def generate_viewport_height_js(
     """
     Generate JS for dynamic viewport height calculation.
     
-    Computes sibling space by measuring actual sibling elements within
-    the container. This works correctly in flex layouts where sibling
-    columns can inflate the container height.
+    Uses position-based measurement to determine available space. Temporarily
+    collapses the card stack to measure its natural top position, then
+    calculates available height based on actual visual positions.
+    
+    This approach handles margin collapsing, flex gap, grid gap, and any
+    other CSS layout mechanism automatically.
     
     Debug mode: Set `window.cardStackDebug = true` in browser console
     to log all intermediate calculation values.
