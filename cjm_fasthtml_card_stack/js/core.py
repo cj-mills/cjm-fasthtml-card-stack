@@ -127,6 +127,10 @@ def _generate_coordinator_js(
         requestAnimationFrame(function() {{
             _syncCountDropdown();
             setTimeout(function() {{
+                // Scroll to top before height calculation to ensure consistent
+                // viewport-relative measurements. HTMX navigation may preserve
+                // scroll position from the previous page, causing incorrect height.
+                window.scrollTo(0, 0);
                 ns.applyAllViewportSettings();
                 // Trigger auto-adjust after initial layout settles
                 if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
