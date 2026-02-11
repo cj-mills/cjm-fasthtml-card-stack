@@ -94,21 +94,23 @@ def render_card_count_select(
     config: CardStackConfig,  # Card stack configuration
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     current_count: int = 3,  # Currently selected card count
+    is_auto_mode: bool = False,  # Whether auto-adjust mode is active
 ) -> Any:  # Card count dropdown component
     """Render the card count dropdown selector."""
     js_fn = f"window.cardStacks['{config.prefix}'].handleCountChange(this.value)"
 
     options = []
 
-    # Auto option (client-side JS syncs the selected state via _syncCountDropdown)
+    # Auto option — selected if is_auto_mode is True
     if config.auto_visible_count:
-        options.append(Option("Auto", value="auto"))
+        options.append(Option("Auto", value="auto", selected=is_auto_mode))
 
+    # Numeric options — only selected if NOT in auto mode
     options.extend(
         Option(
             f"{count} card{'s' if count > 1 else ''}",
             value=str(count),
-            selected=(count == current_count)
+            selected=(not is_auto_mode and count == current_count)
         )
         for count in config.visible_count_options
     )
