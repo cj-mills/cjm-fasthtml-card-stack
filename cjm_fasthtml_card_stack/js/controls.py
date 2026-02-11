@@ -210,4 +210,7 @@ def _generate_card_count_mgmt_js(
                 if (parseInt(sel.value) !== stored) sel.value = stored;
             }}
         }}
+
+        // Expose for external callers (e.g., chrome swap after zone change)
+        ns.syncCountDropdown = _syncCountDropdown;
     """
