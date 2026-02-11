@@ -159,6 +159,7 @@ def _generate_card_count_mgmt_js(
         }}
 
         ns.updateCardCount = function(value) {{
+            // Manual count selection — sets is_auto_mode to false
             const count = parseInt(value);
             if (!_VALID_COUNTS.includes(count)) return;
             try {{ localStorage.setItem(_COUNT_KEY, count); }} catch (e) {{}}
@@ -168,14 +169,14 @@ def _generate_card_count_mgmt_js(
                 htmx.ajax('POST', '{urls.update_viewport}', {{
                     target: '#' + '{ids.card_stack}',
                     swap: 'none',
-                    values: {{ visible_count: count }}
+                    values: {{ visible_count: count, is_auto: 'false' }}
                 }});
             }}
         }};
 
         ns._autoUpdateCount = function(count) {{
-            // Like updateCardCount but bypasses _VALID_COUNTS validation.
-            // Used by auto-adjustment which can set any count.
+            // Auto-adjustment — sets is_auto_mode to true
+            // Bypasses _VALID_COUNTS validation since auto can set any count.
             const c = Math.max(1, Math.round(count));
             const cardStack = document.getElementById('{ids.card_stack}');
             if (cardStack) cardStack.dataset.visibleCount = c;
@@ -183,7 +184,7 @@ def _generate_card_count_mgmt_js(
                 htmx.ajax('POST', '{urls.update_viewport}', {{
                     target: '#' + '{ids.card_stack}',
                     swap: 'none',
-                    values: {{ visible_count: c }}
+                    values: {{ visible_count: c, is_auto: 'true' }}
                 }});
             }}
         }};
