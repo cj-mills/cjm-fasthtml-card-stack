@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates.">
+
+<title>cjm-fasthtml-card-stack</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-baedc78cbf92349237790bf011c153e8.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="styles.css">
+<meta property="og:title" content="cjm-fasthtml-card-stack">
+<meta property="og:description" content="A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates.">
+<meta property="og:site_name" content="cjm-fasthtml-card-stack">
+<meta name="twitter:title" content="cjm-fasthtml-card-stack">
+<meta name="twitter:description" content="A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates.">
+<meta name="twitter:card" content="summary">
+</head>
+
+<body class="nav-sidebar floating nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">cjm-fasthtml-card-stack</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./index.html">cjm-fasthtml-card-stack</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">cjm-fasthtml-card-stack</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">components</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./components/controls.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Controls</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./components/progress.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Progress</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./components/states.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">States</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./components/viewport.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Viewport</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">core</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core/button_ids.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Button IDs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core/config.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Config</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core/constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core/html_ids.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">HTML IDs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./core/models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">helpers</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./helpers/focus.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Focus</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">js</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/auto_adjust.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Auto Adjust</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/controls.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Controls</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Core</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/navigation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Page Navigation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/scroll.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Scroll Navigation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/touch.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Touch Navigation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./js/viewport.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">JS: Viewport Height</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">keyboard</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./keyboard/actions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Actions</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">routes</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./routes/handlers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Handlers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./routes/router.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Router</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#install" id="toc-install" class="nav-link active" data-scroll-target="#install">Install</a></li>
+  <li><a href="#project-structure" id="toc-project-structure" class="nav-link" data-scroll-target="#project-structure">Project Structure</a></li>
+  <li><a href="#module-dependencies" id="toc-module-dependencies" class="nav-link" data-scroll-target="#module-dependencies">Module Dependencies</a></li>
+  <li><a href="#cli-reference" id="toc-cli-reference" class="nav-link" data-scroll-target="#cli-reference">CLI Reference</a></li>
+  <li><a href="#module-overview" id="toc-module-overview" class="nav-link" data-scroll-target="#module-overview">Module Overview</a>
+  <ul class="collapse">
+  <li><a href="#actions-actions.ipynb" id="toc-actions-actions.ipynb" class="nav-link" data-scroll-target="#actions-actions.ipynb">Actions (<code>actions.ipynb</code>)</a></li>
+  <li><a href="#js-auto-adjust-auto_adjust.ipynb" id="toc-js-auto-adjust-auto_adjust.ipynb" class="nav-link" data-scroll-target="#js-auto-adjust-auto_adjust.ipynb">JS: Auto Adjust (<code>auto_adjust.ipynb</code>)</a></li>
+  <li><a href="#button-ids-button_ids.ipynb" id="toc-button-ids-button_ids.ipynb" class="nav-link" data-scroll-target="#button-ids-button_ids.ipynb">Button IDs (<code>button_ids.ipynb</code>)</a></li>
+  <li><a href="#config-config.ipynb" id="toc-config-config.ipynb" class="nav-link" data-scroll-target="#config-config.ipynb">Config (<code>config.ipynb</code>)</a></li>
+  <li><a href="#constants-constants.ipynb" id="toc-constants-constants.ipynb" class="nav-link" data-scroll-target="#constants-constants.ipynb">Constants (<code>constants.ipynb</code>)</a></li>
+  <li><a href="#controls-controls.ipynb" id="toc-controls-controls.ipynb" class="nav-link" data-scroll-target="#controls-controls.ipynb">Controls (<code>controls.ipynb</code>)</a></li>
+  <li><a href="#js-controls-controls.ipynb" id="toc-js-controls-controls.ipynb" class="nav-link" data-scroll-target="#js-controls-controls.ipynb">JS: Controls (<code>controls.ipynb</code>)</a></li>
+  <li><a href="#js-core-core.ipynb" id="toc-js-core-core.ipynb" class="nav-link" data-scroll-target="#js-core-core.ipynb">JS: Core (<code>core.ipynb</code>)</a></li>
+  <li><a href="#focus-focus.ipynb" id="toc-focus-focus.ipynb" class="nav-link" data-scroll-target="#focus-focus.ipynb">Focus (<code>focus.ipynb</code>)</a></li>
+  <li><a href="#handlers-handlers.ipynb" id="toc-handlers-handlers.ipynb" class="nav-link" data-scroll-target="#handlers-handlers.ipynb">Handlers (<code>handlers.ipynb</code>)</a></li>
+  <li><a href="#html-ids-html_ids.ipynb" id="toc-html-ids-html_ids.ipynb" class="nav-link" data-scroll-target="#html-ids-html_ids.ipynb">HTML IDs (<code>html_ids.ipynb</code>)</a></li>
+  <li><a href="#models-models.ipynb" id="toc-models-models.ipynb" class="nav-link" data-scroll-target="#models-models.ipynb">Models (<code>models.ipynb</code>)</a></li>
+  <li><a href="#js-page-navigation-navigation.ipynb" id="toc-js-page-navigation-navigation.ipynb" class="nav-link" data-scroll-target="#js-page-navigation-navigation.ipynb">JS: Page Navigation (<code>navigation.ipynb</code>)</a></li>
+  <li><a href="#progress-progress.ipynb" id="toc-progress-progress.ipynb" class="nav-link" data-scroll-target="#progress-progress.ipynb">Progress (<code>progress.ipynb</code>)</a></li>
+  <li><a href="#router-router.ipynb" id="toc-router-router.ipynb" class="nav-link" data-scroll-target="#router-router.ipynb">Router (<code>router.ipynb</code>)</a></li>
+  <li><a href="#js-scroll-navigation-scroll.ipynb" id="toc-js-scroll-navigation-scroll.ipynb" class="nav-link" data-scroll-target="#js-scroll-navigation-scroll.ipynb">JS: Scroll Navigation (<code>scroll.ipynb</code>)</a></li>
+  <li><a href="#states-states.ipynb" id="toc-states-states.ipynb" class="nav-link" data-scroll-target="#states-states.ipynb">States (<code>states.ipynb</code>)</a></li>
+  <li><a href="#js-touch-navigation-touch.ipynb" id="toc-js-touch-navigation-touch.ipynb" class="nav-link" data-scroll-target="#js-touch-navigation-touch.ipynb">JS: Touch Navigation (<code>touch.ipynb</code>)</a></li>
+  <li><a href="#viewport-viewport.ipynb" id="toc-viewport-viewport.ipynb" class="nav-link" data-scroll-target="#viewport-viewport.ipynb">Viewport (<code>viewport.ipynb</code>)</a></li>
+  <li><a href="#js-viewport-height-viewport.ipynb" id="toc-js-viewport-height-viewport.ipynb" class="nav-link" data-scroll-target="#js-viewport-height-viewport.ipynb">JS: Viewport Height (<code>viewport.ipynb</code>)</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/cj-mills/cjm-fasthtml-card-stack/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div><div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.html.md"><i class="bi bi-file-code"></i>CommonMark</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">cjm-fasthtml-card-stack</h1>
+</div>
+
+<div>
+  <div class="description">
+    A fixed-viewport card stack component for FastHTML with keyboard navigation, scroll-to-nav, configurable focus position, and HTMX-driven OOB updates.
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<!-- WARNING: THIS FILE WAS AUTOGENERATED! DO NOT EDIT! -->
+<section id="install" class="level2">
+<h2 class="anchored" data-anchor-id="install">Install</h2>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install cjm_fasthtml_card_stack</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="project-structure" class="level2">
+<h2 class="anchored" data-anchor-id="project-structure">Project Structure</h2>
+<pre><code>nbs/
+├── components/ (4)
+│   ├── controls.ipynb  # Width slider, scale slider, and card count selector components.
+│   ├── progress.ipynb  # Progress indicator showing the current position within the card stack.
+│   ├── states.ipynb    # Loading, empty, and placeholder card components for the card stack viewport.
+│   └── viewport.ipynb  # Card stack viewport with 3-section CSS Grid layout, slot rendering,
+├── core/ (5)
+│   ├── button_ids.ipynb  # Prefix-based IDs for hidden keyboard action buttons.
+│   ├── config.ipynb      # Configuration dataclasses for card stack initialization and visual styling.
+│   ├── constants.ipynb   # CSS class constants, type aliases, and default values for the card stack library.
+│   ├── html_ids.ipynb    # Prefix-based HTML ID generator for card stack DOM elements.
+│   └── models.ipynb      # Core dataclasses for card stack state, render context, and URL routing.
+├── helpers/ (1)
+│   └── focus.ipynb  # Focus position resolution, viewport window calculation, and OOB focus sync.
+├── js/ (7)
+│   ├── auto_adjust.ipynb  # JavaScript generator for automatic visible card count adjustment.
+│   ├── controls.ipynb     # JavaScript generators for width, scale, and card count management.
+│   ├── core.ipynb         # Master composer for card stack JavaScript. Combines viewport height,
+│   ├── navigation.ipynb   # JavaScript generator for page jump and first/last navigation helpers.
+│   ├── scroll.ipynb       # JavaScript generator for scroll-to-nav conversion.
+│   ├── touch.ipynb        # JavaScript generator for touch-to-nav conversion: swipe, drag,
+│   └── viewport.ipynb     # JavaScript generator for dynamic viewport height calculation.
+├── keyboard/ (1)
+│   └── actions.ipynb  # Keyboard navigation focus zone and action factories for the card stack.
+└── routes/ (2)
+    ├── handlers.ipynb  # Response builder functions for card stack operations (Tier 1 API).
+    └── router.ipynb    # Convenience router factory that wires up standard card stack routes (Tier 2 API).</code></pre>
+<p>Total: 20 notebooks across 6 directories</p>
+</section>
+<section id="module-dependencies" class="level2">
+<h2 class="anchored" data-anchor-id="module-dependencies">Module Dependencies</h2>
+<pre class="mermaid"><code>graph LR
+    components_controls[components.controls&lt;br/&gt;Controls]
+    components_progress[components.progress&lt;br/&gt;Progress]
+    components_states[components.states&lt;br/&gt;States]
+    components_viewport[components.viewport&lt;br/&gt;Viewport]
+    core_button_ids[core.button_ids&lt;br/&gt;Button IDs]
+    core_config[core.config&lt;br/&gt;Config]
+    core_constants[core.constants&lt;br/&gt;Constants]
+    core_html_ids[core.html_ids&lt;br/&gt;HTML IDs]
+    core_models[core.models&lt;br/&gt;Models]
+    helpers_focus[helpers.focus&lt;br/&gt;Focus]
+    js_auto_adjust[js.auto_adjust&lt;br/&gt;JS: Auto Adjust]
+    js_controls[js.controls&lt;br/&gt;JS: Controls]
+    js_core[js.core&lt;br/&gt;JS: Core]
+    js_navigation[js.navigation&lt;br/&gt;JS: Page Navigation]
+    js_scroll[js.scroll&lt;br/&gt;JS: Scroll Navigation]
+    js_touch[js.touch&lt;br/&gt;JS: Touch Navigation]
+    js_viewport[js.viewport&lt;br/&gt;JS: Viewport Height]
+    keyboard_actions[keyboard.actions&lt;br/&gt;Actions]
+    routes_handlers[routes.handlers&lt;br/&gt;Handlers]
+    routes_router[routes.router&lt;br/&gt;Router]
+
+    components_controls --&gt; core_html_ids
+    components_controls --&gt; core_config
+    components_progress --&gt; core_html_ids
+    components_states --&gt; core_html_ids
+    components_viewport --&gt; core_models
+    components_viewport --&gt; core_html_ids
+    components_viewport --&gt; helpers_focus
+    components_viewport --&gt; core_config
+    components_viewport --&gt; components_states
+    components_viewport --&gt; core_constants
+    helpers_focus --&gt; core_html_ids
+    js_auto_adjust --&gt; core_models
+    js_auto_adjust --&gt; core_html_ids
+    js_auto_adjust --&gt; core_constants
+    js_auto_adjust --&gt; core_config
+    js_controls --&gt; core_constants
+    js_controls --&gt; core_models
+    js_controls --&gt; core_html_ids
+    js_controls --&gt; core_config
+    js_core --&gt; core_html_ids
+    js_core --&gt; core_config
+    js_core --&gt; js_controls
+    js_core --&gt; core_constants
+    js_core --&gt; js_navigation
+    js_core --&gt; core_models
+    js_core --&gt; core_button_ids
+    js_core --&gt; js_auto_adjust
+    js_core --&gt; js_viewport
+    js_core --&gt; js_touch
+    js_core --&gt; js_scroll
+    js_navigation --&gt; core_button_ids
+    js_scroll --&gt; core_constants
+    js_scroll --&gt; core_html_ids
+    js_scroll --&gt; core_button_ids
+    js_touch --&gt; core_constants
+    js_touch --&gt; core_html_ids
+    js_touch --&gt; core_button_ids
+    js_viewport --&gt; core_html_ids
+    keyboard_actions --&gt; core_html_ids
+    keyboard_actions --&gt; core_config
+    keyboard_actions --&gt; core_button_ids
+    keyboard_actions --&gt; js_core
+    keyboard_actions --&gt; core_models
+    routes_handlers --&gt; core_models
+    routes_handlers --&gt; core_html_ids
+    routes_handlers --&gt; core_config
+    routes_handlers --&gt; components_progress
+    routes_handlers --&gt; helpers_focus
+    routes_handlers --&gt; components_viewport
+    routes_router --&gt; core_models
+    routes_router --&gt; core_html_ids
+    routes_router --&gt; core_config
+    routes_router --&gt; routes_handlers</code></pre>
+<p><em>53 cross-module dependencies detected</em></p>
+</section>
+<section id="cli-reference" class="level2">
+<h2 class="anchored" data-anchor-id="cli-reference">CLI Reference</h2>
+<p>No CLI commands found in this project.</p>
+</section>
+<section id="module-overview" class="level2">
+<h2 class="anchored" data-anchor-id="module-overview">Module Overview</h2>
+<p>Detailed documentation for each module in the project:</p>
+<section id="actions-actions.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="actions-actions.ipynb">Actions (<code>actions.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Keyboard navigation focus zone and action factories for the card stack.</p>
+</blockquote>
+<section id="import" class="level4">
+<h4 class="anchored" data-anchor-id="import">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.keyboard.actions <span class="im">import</span> (</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    create_card_stack_focus_zone,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    create_card_stack_nav_actions,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    build_card_stack_url_map,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    render_card_stack_action_buttons</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions" class="level4">
+<h4 class="anchored" data-anchor-id="functions">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_card_stack_focus_zone(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    on_focus_change: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># JS callback name on focus change</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    hidden_input_prefix: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Prefix for keyboard nav hidden inputs</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    data_attributes: Tuple[<span class="bu">str</span>, ...] <span class="op">=</span> (),  <span class="co"># Data attributes to track on focused items</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> FocusZone:  <span class="co"># Configured focus zone for the card stack</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Create a focus zone for a card stack viewport."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> create_card_stack_nav_actions(</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    zone_id: <span class="bu">str</span>,  <span class="co"># Focus zone ID to restrict actions to</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for HTMX triggers</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config (for prefix-unique callback names)</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    disable_in_modes: Tuple[<span class="bu">str</span>, ...] <span class="op">=</span> (),  <span class="co"># Mode names that disable navigation</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[KeyAction, ...]:  <span class="co"># Standard card stack navigation actions</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Create standard keyboard navigation actions for a card stack."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_card_stack_url_map(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for this card stack instance</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for routing</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Dict[<span class="bu">str</span>, <span class="bu">str</span>]:  <span class="co"># Mapping of button ID -&gt; route URL</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">    Build url_map for render_keyboard_system with all card stack navigation buttons.</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">    Returns a dict mapping button IDs to URLs for all navigation actions:</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">    nav_up, nav_down, nav_first, nav_last, nav_page_up, nav_page_down.</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Merge with consumer's own action URLs when building the keyboard system:</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="co">        url_map = {**build_card_stack_url_map(btn_ids, urls), **my_action_urls}</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_card_stack_action_buttons(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for this card stack instance</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for routing</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs (for hx-include of focused_index_input)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="st">'FT'</span>:  <span class="co"># Div containing hidden action buttons</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co">    Render hidden HTMX buttons for JS-callback-triggered navigation actions.</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">    </span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="co">    Creates buttons for: page_up, page_down, first, last.</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="co">    These are clicked programmatically by the card stack's JS functions.</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co">    Must be included in the DOM alongside the keyboard system's own buttons.</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-auto-adjust-auto_adjust.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-auto-adjust-auto_adjust.ipynb">JS: Auto Adjust (<code>auto_adjust.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generator for automatic visible card count adjustment.</p>
+</blockquote>
+<section id="import-1" class="level4">
+<h4 class="anchored" data-anchor-id="import-1">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.auto_adjust <span class="im">import</span> <span class="op">*</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-1" class="level4">
+<h4 class="anchored" data-anchor-id="functions-1">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_auto_adjust_js(</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config for auto mode check</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle (update_viewport)</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Focus slot offset (None=center, -1=bottom, 0=top)</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment for auto visible count adjustment</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for automatic visible count adjustment based on overflow detection."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="button-ids-button_ids.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="button-ids-button_ids.ipynb">Button IDs (<code>button_ids.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Prefix-based IDs for hidden keyboard action buttons.</p>
+</blockquote>
+<section id="import-2" class="level4">
+<h4 class="anchored" data-anchor-id="import-2">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.core.button_ids <span class="im">import</span> (</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    CardStackButtonIds</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="classes" class="level4">
+<h4 class="anchored" data-anchor-id="classes">Classes</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackButtonIds:</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Prefix-based IDs for hidden keyboard action buttons."</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># ID prefix for this card stack instance</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_up(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to previous item</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Navigate up button."""</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-up"</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> nav_down(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to next item</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Navigate up button."</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_down(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to next item</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Navigate down button."""</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-down"</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> nav_first(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to first item</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Navigate down button."</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_first(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to first item</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Navigate to first item button."""</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-first"</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> nav_last(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to last item</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Navigate to first item button."</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_last(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Navigate to last item</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Navigate to last item button."""</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-last"</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> nav_page_up(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Page jump up</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Navigate to last item button."</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_page_up(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Page jump up</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Page up button."""</span></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-page-up"</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> nav_page_down(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Page jump down</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Page up button."</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> nav_page_down(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Page jump down</span></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Page down button."""</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-nav-page-down"</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>        <span class="co"># --- Viewport control buttons ---</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> width_narrow(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Decrease viewport width</span></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Page down button."</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> width_narrow(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Decrease viewport width</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Narrow viewport button."""</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-width-narrow"</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> width_widen(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Increase viewport width</span></span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Narrow viewport button."</span></span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> width_widen(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Increase viewport width</span></span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Widen viewport button."""</span></span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-width-widen"</span></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> scale_decrease(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Decrease content scale</span></span>
+<span id="cb12-71"><a href="#cb12-71" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Widen viewport button."</span></span>
+<span id="cb12-72"><a href="#cb12-72" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-73"><a href="#cb12-73" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> scale_decrease(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Decrease content scale</span></span>
+<span id="cb12-74"><a href="#cb12-74" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Decrease scale button."""</span></span>
+<span id="cb12-75"><a href="#cb12-75" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-btn-scale-decrease"</span></span>
+<span id="cb12-76"><a href="#cb12-76" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-77"><a href="#cb12-77" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb12-78"><a href="#cb12-78" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> scale_increase(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Increase content scale</span></span>
+<span id="cb12-79"><a href="#cb12-79" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Decrease scale button."</span></span>
+<span id="cb12-80"><a href="#cb12-80" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-81"><a href="#cb12-81" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> scale_increase(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Increase content scale</span></span>
+<span id="cb12-82"><a href="#cb12-82" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Increase scale button."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="config-config.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="config-config.ipynb">Config (<code>config.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Configuration dataclasses for card stack initialization and visual styling.</p>
+</blockquote>
+<section id="import-3" class="level4">
+<h4 class="anchored" data-anchor-id="import-3">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.core.config <span class="im">import</span> (</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    CardStackStyleConfig,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    CardStackConfig</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-2" class="level4">
+<h4 class="anchored" data-anchor-id="functions-2">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _auto_prefix() <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Unique prefix string (e.g., "cs0", "cs1")</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Generate an auto-incrementing unique prefix."""</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> _prefix_counter</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> <span class="ss">f"cs</span><span class="sc">{</span>_prefix_counter<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    _prefix_counter <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _reset_prefix_counter() <span class="op">-&gt;</span> <span class="va">None</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate an auto-incrementing unique prefix."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _reset_prefix_counter() <span class="op">-&gt;</span> <span class="va">None</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Reset the prefix counter (for testing only)."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="classes-1" class="level4">
+<h4 class="anchored" data-anchor-id="classes-1">Classes</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackStyleConfig:</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Visual styling for a card stack instance."</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    section_gap: <span class="bu">str</span> <span class="op">=</span> <span class="st">'1rem'</span>  <span class="co"># Gap between cards in each section</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    slot_padding: <span class="bu">str</span> <span class="op">=</span> <span class="st">'0.25rem'</span>  <span class="co"># Padding around context card content</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    viewport_padding_x: <span class="bu">str</span> <span class="op">=</span> <span class="st">'0.5rem'</span>  <span class="co"># Horizontal outer container padding</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    viewport_padding_y: <span class="bu">str</span> <span class="op">=</span> <span class="st">'0.5rem'</span>  <span class="co"># Vertical outer container padding</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    focus_padding_x: <span class="bu">str</span> <span class="op">=</span> <span class="st">'0.5rem'</span>  <span class="co"># Horizontal focused section padding</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    focus_padding_b: <span class="bu">str</span> <span class="op">=</span> <span class="st">'1rem'</span>  <span class="co"># Bottom focused section padding</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    focus_ring: <span class="bu">str</span> <span class="op">=</span> _DEFAULT_FOCUS_RING  <span class="co"># Ring classes for focused card</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    focus_shadow: <span class="bu">str</span> <span class="op">=</span> _DEFAULT_FOCUS_SHADOW  <span class="co"># Shadow classes for focused card</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    focus_border_radius: <span class="bu">str</span> <span class="op">=</span> _DEFAULT_FOCUS_BORDER_RADIUS  <span class="co"># Border radius class for focused card</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> css_vars_style(</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>,</span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>            prefix: <span class="bu">str</span>,  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>        ) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Inline style string with CSS custom property declarations</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Generate CSS custom property declarations as an inline style string."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackConfig:</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Initialization-time settings for a card stack instance."</span></span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span> <span class="op">=</span> field(...)  <span class="co"># HTML ID prefix (auto-generated if omitted)</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    visible_count_options: Tuple[<span class="bu">int</span>, ...] <span class="op">=</span> (<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">7</span>, <span class="dv">9</span>)  <span class="co"># Choices for card count dropdown</span></span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    auto_visible_count: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>  <span class="co"># Whether "Auto" option appears in card count dropdown</span></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    card_width_min: <span class="bu">int</span> <span class="op">=</span> <span class="dv">30</span>  <span class="co"># Width slider minimum (rem)</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    card_width_max: <span class="bu">int</span> <span class="op">=</span> <span class="dv">120</span>  <span class="co"># Width slider maximum (rem)</span></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    card_width_step: <span class="bu">int</span> <span class="op">=</span> <span class="dv">5</span>  <span class="co"># Width slider step (rem)</span></span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    card_scale_min: <span class="bu">int</span> <span class="op">=</span> <span class="dv">50</span>  <span class="co"># Scale slider minimum (%)</span></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    card_scale_max: <span class="bu">int</span> <span class="op">=</span> <span class="dv">200</span>  <span class="co"># Scale slider maximum (%)</span></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    card_scale_step: <span class="bu">int</span> <span class="op">=</span> <span class="dv">10</span>  <span class="co"># Scale slider step (%)</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    click_to_focus: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>  <span class="co"># Whether context cards get transparent click overlay</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    disable_scroll_in_modes: Tuple[<span class="bu">str</span>, ...] <span class="op">=</span> ()  <span class="co"># Mode names where scroll-to-nav is suppressed</span></span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>    style: CardStackStyleConfig <span class="op">=</span> field(...)  <span class="co"># Visual styling config</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="variables" class="level4">
+<h4 class="anchored" data-anchor-id="variables">Variables</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>_prefix_counter: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>_DEFAULT_FOCUS_RING: <span class="bu">str</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>_DEFAULT_FOCUS_SHADOW: <span class="bu">str</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>_DEFAULT_FOCUS_BORDER_RADIUS: <span class="bu">str</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="constants-constants.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="constants-constants.ipynb">Constants (<code>constants.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>CSS class constants, type aliases, and default values for the card stack library.</p>
+</blockquote>
+<section id="import-4" class="level4">
+<h4 class="anchored" data-anchor-id="import-4">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.core.constants <span class="im">import</span> (</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    CardRole,</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    SCROLL_THRESHOLD,</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    NAVIGATION_COOLDOWN,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    TRACKPAD_COOLDOWN,</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    TOUCH_SWIPE_THRESHOLD,</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    TOUCH_MOMENTUM_MIN_VELOCITY,</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    TOUCH_MOMENTUM_FRICTION,</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    TOUCH_PINCH_THRESHOLD,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    TOUCH_VELOCITY_SAMPLES,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    DEFAULT_VISIBLE_COUNT,</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    DEFAULT_CARD_WIDTH,</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    DEFAULT_CARD_SCALE,</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    width_storage_key,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    scale_storage_key,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    card_count_storage_key,</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    auto_count_storage_key</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-3" class="level4">
+<h4 class="anchored" data-anchor-id="functions-3">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> width_storage_key(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># localStorage key for card width</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate localStorage key for card width."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> scale_storage_key(</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># localStorage key for card scale</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate localStorage key for card scale."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_count_storage_key(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># localStorage key for card count</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate localStorage key for card count."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> auto_count_storage_key(</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># localStorage key for auto card count mode</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate localStorage key for auto card count mode."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="variables-1" class="level4">
+<h4 class="anchored" data-anchor-id="variables-1">Variables</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>SCROLL_THRESHOLD: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>NAVIGATION_COOLDOWN: <span class="bu">int</span> <span class="op">=</span> <span class="dv">100</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>TRACKPAD_COOLDOWN: <span class="bu">int</span> <span class="op">=</span> <span class="dv">250</span></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>TOUCH_SWIPE_THRESHOLD: <span class="bu">int</span> <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>TOUCH_MOMENTUM_MIN_VELOCITY: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.5</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>TOUCH_MOMENTUM_FRICTION: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.95</span></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>TOUCH_PINCH_THRESHOLD: <span class="bu">int</span> <span class="op">=</span> <span class="dv">30</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>TOUCH_VELOCITY_SAMPLES: <span class="bu">int</span> <span class="op">=</span> <span class="dv">5</span></span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>DEFAULT_VISIBLE_COUNT: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>DEFAULT_CARD_WIDTH: <span class="bu">int</span> <span class="op">=</span> <span class="dv">80</span></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>DEFAULT_CARD_SCALE: <span class="bu">int</span> <span class="op">=</span> <span class="dv">100</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="controls-controls.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="controls-controls.ipynb">Controls (<code>controls.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Width slider, scale slider, and card count selector components.</p>
+</blockquote>
+<section id="import-5" class="level4">
+<h4 class="anchored" data-anchor-id="import-5">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.components.controls <span class="im">import</span> (</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>    render_width_slider,</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    render_scale_slider,</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    render_card_count_select</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-4" class="level4">
+<h4 class="anchored" data-anchor-id="functions-4">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_width_slider(</span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    card_width: <span class="bu">int</span> <span class="op">=</span> <span class="dv">80</span>,  <span class="co"># Current card width in rem</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Width slider component</span></span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render the card stack width slider control."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_scale_slider(</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    card_scale: <span class="bu">int</span> <span class="op">=</span> <span class="dv">100</span>,  <span class="co"># Current scale percentage</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Scale slider component</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render the card stack scale slider control."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_card_count_select(</span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    current_count: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span>,  <span class="co"># Currently selected card count</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>    is_auto_mode: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,  <span class="co"># Whether auto-adjust mode is active</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Card count dropdown component</span></span>
+<span id="cb28-7"><a href="#cb28-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render the card count dropdown selector."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-controls-controls.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-controls-controls.ipynb">JS: Controls (<code>controls.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generators for width, scale, and card count management.</p>
+</blockquote>
+<section id="import-6" class="level4">
+<h4 class="anchored" data-anchor-id="import-6">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.controls <span class="im">import</span> <span class="op">*</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-5" class="level4">
+<h4 class="anchored" data-anchor-id="functions-5">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_width_mgmt_js(</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config with slider bounds</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle (save_width)</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment for width management</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for width slider management."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_scale_mgmt_js(</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config with slider bounds</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle (save_scale)</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment for scale management</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for scale slider management."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_card_count_mgmt_js(</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config with count options</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle (update_viewport)</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment for card count management</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for card count selector management."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-core-core.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-core-core.ipynb">JS: Core (<code>core.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Master composer for card stack JavaScript. Combines viewport height,</p>
+</blockquote>
+<section id="import-7" class="level4">
+<h4 class="anchored" data-anchor-id="import-7">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.core <span class="im">import</span> (</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>    global_callback_name,</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    generate_card_stack_js</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-6" class="level4">
+<h4 class="anchored" data-anchor-id="functions-6">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_coordinator_js(</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config for prefix-unique listener guards</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Focus slot offset (None=center, -1=bottom, 0=top)</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment for master coordinator</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for the master coordinator and HTMX listener."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> global_callback_name(</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>,  <span class="co"># Card stack instance prefix</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    callback: <span class="bu">str</span>,  <span class="co"># Base callback name (e.g., "jumpPageUp")</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Global function name (e.g., "cs0_jumpPageUp")</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate a prefix-unique global callback name for keyboard navigation."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _generate_global_callbacks_js(</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Config with prefix</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JS code fragment registering global wrappers</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Register global wrappers for keyboard navigation system."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_card_stack_js(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Compose all card stack JS into a single namespaced IIFE."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="variables-2" class="level4">
+<h4 class="anchored" data-anchor-id="variables-2">Variables</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>_GLOBAL_CALLBACKS</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="focus-focus.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="focus-focus.ipynb">Focus (<code>focus.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Focus position resolution, viewport window calculation, and OOB focus sync.</p>
+</blockquote>
+<section id="import-8" class="level4">
+<h4 class="anchored" data-anchor-id="import-8">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.helpers.focus <span class="im">import</span> (</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    resolve_focus_slot,</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    calculate_viewport_window,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    render_focus_oob</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-7" class="level4">
+<h4 class="anchored" data-anchor-id="functions-7">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb40"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> resolve_focus_slot(</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>],  <span class="co"># Slot offset (None=center, -1=bottom, 0=top)</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>    visible_count: <span class="bu">int</span>,  <span class="co"># Number of visible card slots</span></span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">int</span>:  <span class="co"># Resolved 0-indexed slot position</span></span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Resolve focus_position to an actual slot index within the viewport."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb41"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calculate_viewport_window(</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>    focused_index: <span class="bu">int</span>,  <span class="co"># Index of the focused item</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>    total_items: <span class="bu">int</span>,  <span class="co"># Total number of items</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>    visible_count: <span class="bu">int</span>,  <span class="co"># Number of visible card slots</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Focus slot (None=center)</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> List[<span class="bu">int</span>]:  <span class="co"># Item indices for each slot (negative or &gt;= total_items for placeholders)</span></span>
+<span id="cb41-7"><a href="#cb41-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Calculate which item indices should be visible in each viewport slot."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb42"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_focus_oob(</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>    focused_index: <span class="bu">int</span>,  <span class="co"># The item index to focus</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>    form_input_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"focused_index"</span>,  <span class="co"># Field name for the form input</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[Hidden, ...]:  <span class="co"># Hidden inputs with OOB swap</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render OOB hidden inputs to synchronize focus after HTMX swap."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="handlers-handlers.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="handlers-handlers.ipynb">Handlers (<code>handlers.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Response builder functions for card stack operations (Tier 1 API).</p>
+</blockquote>
+<section id="import-9" class="level4">
+<h4 class="anchored" data-anchor-id="import-9">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb43"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.routes.handlers <span class="im">import</span> (</span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>    build_slots_response,</span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>    build_nav_response,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>    card_stack_navigate,</span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>    card_stack_navigate_to_index,</span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>    card_stack_update_viewport,</span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>    card_stack_save_width,</span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>    card_stack_save_scale</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-8" class="level4">
+<h4 class="anchored" data-anchor-id="functions-8">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb44"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_slots_response(</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> List[Any]:  <span class="co"># OOB slot elements (3 viewport sections)</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Build OOB slot updates for the viewport sections only."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb45"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> build_nav_response(</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>    progress_label: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Item"</span>,  <span class="co"># Label for progress indicator</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple:  <span class="co"># OOB elements (slots + progress + focus)</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Build full OOB response for navigation: slots + progress + focus inputs."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb46"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_stack_navigate(</span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a>    direction: <span class="bu">str</span>,  <span class="co"># "up", "down", "first", "last", "page_up", "page_down"</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state (mutated in place)</span></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    progress_label: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Item"</span>,  <span class="co"># Label for progress indicator</span></span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple:  <span class="co"># OOB elements (slots + progress + focus)</span></span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Navigate to a different item. Mutates state.focused_index in place."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb47"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_stack_navigate_to_index(</span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a>    target_index: <span class="bu">int</span>,  <span class="co"># Target item index to navigate to</span></span>
+<span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state (mutated in place)</span></span>
+<span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb47-6"><a href="#cb47-6" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>    progress_label: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Item"</span>,  <span class="co"># Label for progress indicator</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple:  <span class="co"># OOB elements (slots + progress + focus)</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Navigate to a specific item index. Mutates state.focused_index in place."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb48"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_stack_update_viewport(</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>    visible_count: <span class="bu">int</span>,  <span class="co"># New number of visible cards</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state (mutated in place)</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple:  <span class="co"># OOB section elements (3 viewport sections)</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Update viewport with new card count via OOB section swaps. Mutates state.visible_count in place."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb49"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_stack_save_width(</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state (mutated in place)</span></span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>    card_width: <span class="bu">int</span>,  <span class="co"># Card stack width in rem</span></span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration (for clamping bounds)</span></span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="va">None</span>:  <span class="co"># No response (swap=none on client)</span></span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Save card stack width. Mutates state.card_width in place."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb50"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> card_stack_save_scale(</span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state (mutated in place)</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>    card_scale: <span class="bu">int</span>,  <span class="co"># Card stack scale percentage</span></span>
+<span id="cb50-4"><a href="#cb50-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration (for clamping bounds)</span></span>
+<span id="cb50-5"><a href="#cb50-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="va">None</span>:  <span class="co"># No response (swap=none on client)</span></span>
+<span id="cb50-6"><a href="#cb50-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Save card stack scale. Mutates state.card_scale in place."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="html-ids-html_ids.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="html-ids-html_ids.ipynb">HTML IDs (<code>html_ids.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Prefix-based HTML ID generator for card stack DOM elements.</p>
+</blockquote>
+<section id="import-10" class="level4">
+<h4 class="anchored" data-anchor-id="import-10">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb51"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.core.html_ids <span class="im">import</span> (</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>    CardStackHtmlIds</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="classes-2" class="level4">
+<h4 class="anchored" data-anchor-id="classes-2">Classes</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb52"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb52-2"><a href="#cb52-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackHtmlIds:</span>
+<span id="cb52-3"><a href="#cb52-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Prefix-based HTML ID generator for card stack DOM elements."</span></span>
+<span id="cb52-4"><a href="#cb52-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-5"><a href="#cb52-5" aria-hidden="true" tabindex="-1"></a>    prefix: <span class="bu">str</span>  <span class="co"># ID prefix for this card stack instance</span></span>
+<span id="cb52-6"><a href="#cb52-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-7"><a href="#cb52-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> card_stack(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Full-width scroll capture container</span></span>
+<span id="cb52-8"><a href="#cb52-8" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Outer card stack container."""</span></span>
+<span id="cb52-9"><a href="#cb52-9" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-card-stack"</span></span>
+<span id="cb52-10"><a href="#cb52-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-11"><a href="#cb52-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-12"><a href="#cb52-12" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> card_stack_inner(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Width-constrained CSS Grid container</span></span>
+<span id="cb52-13"><a href="#cb52-13" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Outer card stack container."</span></span>
+<span id="cb52-14"><a href="#cb52-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-15"><a href="#cb52-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> card_stack_inner(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Width-constrained CSS Grid container</span></span>
+<span id="cb52-16"><a href="#cb52-16" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Inner grid container for 3-section layout."""</span></span>
+<span id="cb52-17"><a href="#cb52-17" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-card-stack-inner"</span></span>
+<span id="cb52-18"><a href="#cb52-18" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-19"><a href="#cb52-19" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-20"><a href="#cb52-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> card_stack_empty(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Empty state placeholder</span></span>
+<span id="cb52-21"><a href="#cb52-21" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Inner grid container for 3-section layout."</span></span>
+<span id="cb52-22"><a href="#cb52-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-23"><a href="#cb52-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> card_stack_empty(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Empty state placeholder</span></span>
+<span id="cb52-24"><a href="#cb52-24" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Empty state container."""</span></span>
+<span id="cb52-25"><a href="#cb52-25" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-card-stack-empty"</span></span>
+<span id="cb52-26"><a href="#cb52-26" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-27"><a href="#cb52-27" aria-hidden="true" tabindex="-1"></a>        <span class="co"># --- Viewport sections ---</span></span>
+<span id="cb52-28"><a href="#cb52-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-29"><a href="#cb52-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-30"><a href="#cb52-30" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> viewport_section_before(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Cards before focused (1fr, justify-end)</span></span>
+<span id="cb52-31"><a href="#cb52-31" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Empty state container."</span></span>
+<span id="cb52-32"><a href="#cb52-32" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-33"><a href="#cb52-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> viewport_section_before(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Cards before focused (1fr, justify-end)</span></span>
+<span id="cb52-34"><a href="#cb52-34" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Viewport section for context cards before focused card."""</span></span>
+<span id="cb52-35"><a href="#cb52-35" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-viewport-section-before"</span></span>
+<span id="cb52-36"><a href="#cb52-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-37"><a href="#cb52-37" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-38"><a href="#cb52-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> viewport_section_focused(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Focused card (auto)</span></span>
+<span id="cb52-39"><a href="#cb52-39" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Viewport section for context cards before focused card."</span></span>
+<span id="cb52-40"><a href="#cb52-40" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-41"><a href="#cb52-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> viewport_section_focused(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Focused card (auto)</span></span>
+<span id="cb52-42"><a href="#cb52-42" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Viewport section for the focused card."""</span></span>
+<span id="cb52-43"><a href="#cb52-43" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-viewport-section-focused"</span></span>
+<span id="cb52-44"><a href="#cb52-44" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-45"><a href="#cb52-45" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-46"><a href="#cb52-46" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> viewport_section_after(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Cards after focused (1fr, justify-start)</span></span>
+<span id="cb52-47"><a href="#cb52-47" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Viewport section for the focused card."</span></span>
+<span id="cb52-48"><a href="#cb52-48" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-49"><a href="#cb52-49" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> viewport_section_after(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Cards after focused (1fr, justify-start)</span></span>
+<span id="cb52-50"><a href="#cb52-50" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Viewport section for context cards after focused card."""</span></span>
+<span id="cb52-51"><a href="#cb52-51" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-viewport-section-after"</span></span>
+<span id="cb52-52"><a href="#cb52-52" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-53"><a href="#cb52-53" aria-hidden="true" tabindex="-1"></a>        <span class="co"># --- Dynamic slot IDs ---</span></span>
+<span id="cb52-54"><a href="#cb52-54" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-55"><a href="#cb52-55" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> viewport_slot(</span>
+<span id="cb52-56"><a href="#cb52-56" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>,</span>
+<span id="cb52-57"><a href="#cb52-57" aria-hidden="true" tabindex="-1"></a>            item_index: <span class="bu">int</span>  <span class="co"># Item index (negative or &gt;= total for placeholders)</span></span>
+<span id="cb52-58"><a href="#cb52-58" aria-hidden="true" tabindex="-1"></a>        ) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Slot element ID tied to virtual item position</span></span>
+<span id="cb52-59"><a href="#cb52-59" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Viewport section for context cards after focused card."</span></span>
+<span id="cb52-60"><a href="#cb52-60" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-61"><a href="#cb52-61" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> viewport_slot(</span>
+<span id="cb52-62"><a href="#cb52-62" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>,</span>
+<span id="cb52-63"><a href="#cb52-63" aria-hidden="true" tabindex="-1"></a>            item_index: <span class="bu">int</span>  <span class="co"># Item index (negative or &gt;= total for placeholders)</span></span>
+<span id="cb52-64"><a href="#cb52-64" aria-hidden="true" tabindex="-1"></a>        ) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Slot element ID tied to virtual item position</span></span>
+<span id="cb52-65"><a href="#cb52-65" aria-hidden="true" tabindex="-1"></a>        <span class="co">"ID for a viewport slot. Works for real items and placeholders."</span></span>
+<span id="cb52-66"><a href="#cb52-66" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-67"><a href="#cb52-67" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> card_count_select(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Card count dropdown</span></span>
+<span id="cb52-68"><a href="#cb52-68" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Card count selector dropdown."""</span></span>
+<span id="cb52-69"><a href="#cb52-69" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-card-count-select"</span></span>
+<span id="cb52-70"><a href="#cb52-70" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-71"><a href="#cb52-71" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-72"><a href="#cb52-72" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> width_slider(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Width range slider</span></span>
+<span id="cb52-73"><a href="#cb52-73" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Card count selector dropdown."</span></span>
+<span id="cb52-74"><a href="#cb52-74" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-75"><a href="#cb52-75" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> width_slider(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Width range slider</span></span>
+<span id="cb52-76"><a href="#cb52-76" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Card stack width slider."""</span></span>
+<span id="cb52-77"><a href="#cb52-77" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-width-slider"</span></span>
+<span id="cb52-78"><a href="#cb52-78" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-79"><a href="#cb52-79" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-80"><a href="#cb52-80" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> scale_slider(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Scale range slider</span></span>
+<span id="cb52-81"><a href="#cb52-81" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Card stack width slider."</span></span>
+<span id="cb52-82"><a href="#cb52-82" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-83"><a href="#cb52-83" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> scale_slider(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Scale range slider</span></span>
+<span id="cb52-84"><a href="#cb52-84" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Card stack scale slider."""</span></span>
+<span id="cb52-85"><a href="#cb52-85" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-scale-slider"</span></span>
+<span id="cb52-86"><a href="#cb52-86" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-87"><a href="#cb52-87" aria-hidden="true" tabindex="-1"></a>        <span class="co"># --- Status elements ---</span></span>
+<span id="cb52-88"><a href="#cb52-88" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-89"><a href="#cb52-89" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-90"><a href="#cb52-90" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> progress(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Progress indicator</span></span>
+<span id="cb52-91"><a href="#cb52-91" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Card stack scale slider."</span></span>
+<span id="cb52-92"><a href="#cb52-92" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-93"><a href="#cb52-93" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> progress(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Progress indicator</span></span>
+<span id="cb52-94"><a href="#cb52-94" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Progress indicator element."""</span></span>
+<span id="cb52-95"><a href="#cb52-95" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-progress"</span></span>
+<span id="cb52-96"><a href="#cb52-96" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-97"><a href="#cb52-97" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-98"><a href="#cb52-98" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> loading(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Loading state container</span></span>
+<span id="cb52-99"><a href="#cb52-99" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Progress indicator element."</span></span>
+<span id="cb52-100"><a href="#cb52-100" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-101"><a href="#cb52-101" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> loading(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Loading state container</span></span>
+<span id="cb52-102"><a href="#cb52-102" aria-hidden="true" tabindex="-1"></a>            <span class="co">"""Loading state container."""</span></span>
+<span id="cb52-103"><a href="#cb52-103" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> <span class="ss">f"</span><span class="sc">{</span><span class="va">self</span><span class="sc">.</span>prefix<span class="sc">}</span><span class="ss">-loading"</span></span>
+<span id="cb52-104"><a href="#cb52-104" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-105"><a href="#cb52-105" aria-hidden="true" tabindex="-1"></a>        <span class="co"># --- Hidden inputs ---</span></span>
+<span id="cb52-106"><a href="#cb52-106" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-107"><a href="#cb52-107" aria-hidden="true" tabindex="-1"></a>        <span class="at">@property</span></span>
+<span id="cb52-108"><a href="#cb52-108" aria-hidden="true" tabindex="-1"></a>        <span class="kw">def</span> focused_index_input(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Hidden input for keyboard nav focus recovery</span></span>
+<span id="cb52-109"><a href="#cb52-109" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Loading state container."</span></span>
+<span id="cb52-110"><a href="#cb52-110" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb52-111"><a href="#cb52-111" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> focused_index_input(<span class="va">self</span>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># Hidden input for keyboard nav focus recovery</span></span>
+<span id="cb52-112"><a href="#cb52-112" aria-hidden="true" tabindex="-1"></a>        <span class="co">"Hidden input storing the focused index for HTMX submissions."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="models-models.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="models-models.ipynb">Models (<code>models.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Core dataclasses for card stack state, render context, and URL routing.</p>
+</blockquote>
+<section id="import-11" class="level4">
+<h4 class="anchored" data-anchor-id="import-11">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb53"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.core.models <span class="im">import</span> (</span>
+<span id="cb53-2"><a href="#cb53-2" aria-hidden="true" tabindex="-1"></a>    CardStackState,</span>
+<span id="cb53-3"><a href="#cb53-3" aria-hidden="true" tabindex="-1"></a>    CardRenderContext,</span>
+<span id="cb53-4"><a href="#cb53-4" aria-hidden="true" tabindex="-1"></a>    CardStackUrls</span>
+<span id="cb53-5"><a href="#cb53-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="classes-3" class="level4">
+<h4 class="anchored" data-anchor-id="classes-3">Classes</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb54"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackState:</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Viewport state for a card stack instance."</span></span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>    focused_index: <span class="bu">int</span> <span class="op">=</span> <span class="dv">0</span>  <span class="co"># Index of focused item in the items list</span></span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>    visible_count: <span class="bu">int</span> <span class="op">=</span> <span class="dv">3</span>  <span class="co"># Number of card slots visible in viewport</span></span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>    card_width: <span class="bu">int</span> <span class="op">=</span> <span class="dv">80</span>  <span class="co"># Max width of card stack inner container in rem</span></span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>    card_scale: <span class="bu">int</span> <span class="op">=</span> <span class="dv">100</span>  <span class="co"># Content scale percentage (50-200)</span></span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>    active_mode: Optional[<span class="bu">str</span>]  <span class="co"># Current interaction mode name (consumer-defined)</span></span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>]  <span class="co"># Slot offset for focused card (None=center, -1=bottom)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb55"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardRenderContext:</span>
+<span id="cb55-3"><a href="#cb55-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Context passed to the consumer's render_card callback."</span></span>
+<span id="cb55-4"><a href="#cb55-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb55-5"><a href="#cb55-5" aria-hidden="true" tabindex="-1"></a>    card_role: <span class="bu">str</span>  <span class="co"># "focused" or "context"</span></span>
+<span id="cb55-6"><a href="#cb55-6" aria-hidden="true" tabindex="-1"></a>    index: <span class="bu">int</span>  <span class="co"># Item's position in the full items list</span></span>
+<span id="cb55-7"><a href="#cb55-7" aria-hidden="true" tabindex="-1"></a>    total_items: <span class="bu">int</span>  <span class="co"># Total item count</span></span>
+<span id="cb55-8"><a href="#cb55-8" aria-hidden="true" tabindex="-1"></a>    is_first: <span class="bu">bool</span>  <span class="co"># Whether this is the first item</span></span>
+<span id="cb55-9"><a href="#cb55-9" aria-hidden="true" tabindex="-1"></a>    is_last: <span class="bu">bool</span>  <span class="co"># Whether this is the last item</span></span>
+<span id="cb55-10"><a href="#cb55-10" aria-hidden="true" tabindex="-1"></a>    active_mode: Optional[<span class="bu">str</span>]  <span class="co"># Current interaction mode</span></span>
+<span id="cb55-11"><a href="#cb55-11" aria-hidden="true" tabindex="-1"></a>    card_scale: <span class="bu">int</span>  <span class="co"># Scale percentage (50-200)</span></span>
+<span id="cb55-12"><a href="#cb55-12" aria-hidden="true" tabindex="-1"></a>    distance_from_focus: <span class="bu">int</span>  <span class="co"># Signed slot offset from focused card (0=focused)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb56"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a><span class="at">@dataclass</span></span>
+<span id="cb56-2"><a href="#cb56-2" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> CardStackUrls:</span>
+<span id="cb56-3"><a href="#cb56-3" aria-hidden="true" tabindex="-1"></a>    <span class="co">"URL bundle for card stack navigation and viewport operations."</span></span>
+<span id="cb56-4"><a href="#cb56-4" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb56-5"><a href="#cb56-5" aria-hidden="true" tabindex="-1"></a>    nav_up: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Navigate to previous item</span></span>
+<span id="cb56-6"><a href="#cb56-6" aria-hidden="true" tabindex="-1"></a>    nav_down: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Navigate to next item</span></span>
+<span id="cb56-7"><a href="#cb56-7" aria-hidden="true" tabindex="-1"></a>    nav_first: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Navigate to first item</span></span>
+<span id="cb56-8"><a href="#cb56-8" aria-hidden="true" tabindex="-1"></a>    nav_last: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Navigate to last item</span></span>
+<span id="cb56-9"><a href="#cb56-9" aria-hidden="true" tabindex="-1"></a>    nav_page_up: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Page jump up</span></span>
+<span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>    nav_page_down: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Page jump down</span></span>
+<span id="cb56-11"><a href="#cb56-11" aria-hidden="true" tabindex="-1"></a>    nav_to_index: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Navigate to specific index (click-to-focus)</span></span>
+<span id="cb56-12"><a href="#cb56-12" aria-hidden="true" tabindex="-1"></a>    update_viewport: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Change visible_count (full viewport re-render)</span></span>
+<span id="cb56-13"><a href="#cb56-13" aria-hidden="true" tabindex="-1"></a>    save_width: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Persist card_width</span></span>
+<span id="cb56-14"><a href="#cb56-14" aria-hidden="true" tabindex="-1"></a>    save_scale: <span class="bu">str</span> <span class="op">=</span> <span class="st">''</span>  <span class="co"># Persist card_scale</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-page-navigation-navigation.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-page-navigation-navigation.ipynb">JS: Page Navigation (<code>navigation.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generator for page jump and first/last navigation helpers.</p>
+</blockquote>
+<section id="import-12" class="level4">
+<h4 class="anchored" data-anchor-id="import-12">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb57"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.navigation <span class="im">import</span> (</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>    generate_page_nav_js</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-9" class="level4">
+<h4 class="anchored" data-anchor-id="functions-9">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_page_nav_js(</span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for navigation triggers</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JavaScript code fragment for page navigation</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for page-based and first/last navigation functions."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="progress-progress.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="progress-progress.ipynb">Progress (<code>progress.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Progress indicator showing the current position within the card stack.</p>
+</blockquote>
+<section id="import-13" class="level4">
+<h4 class="anchored" data-anchor-id="import-13">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb59"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.components.progress <span class="im">import</span> (</span>
+<span id="cb59-2"><a href="#cb59-2" aria-hidden="true" tabindex="-1"></a>    render_progress_indicator</span>
+<span id="cb59-3"><a href="#cb59-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-10" class="level4">
+<h4 class="anchored" data-anchor-id="functions-10">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb60"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_progress_indicator(</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>    focused_index: <span class="bu">int</span>,  <span class="co"># Currently focused item index (0-based)</span></span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>    total_items: <span class="bu">int</span>,  <span class="co"># Total number of items</span></span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>    label: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Item"</span>,  <span class="co"># Label prefix (e.g., "Item", "Segment", "Card")</span></span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>    oob: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,  <span class="co"># Whether to render as OOB swap</span></span>
+<span id="cb60-7"><a href="#cb60-7" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Progress indicator component</span></span>
+<span id="cb60-8"><a href="#cb60-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render position indicator showing current item in the collection."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="router-router.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="router-router.ipynb">Router (<code>router.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Convenience router factory that wires up standard card stack routes (Tier 2 API).</p>
+</blockquote>
+<section id="import-14" class="level4">
+<h4 class="anchored" data-anchor-id="import-14">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb61"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.routes.router <span class="im">import</span> (</span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a>    init_card_stack_router</span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-11" class="level4">
+<h4 class="anchored" data-anchor-id="functions-11">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb62"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> init_card_stack_router(</span>
+<span id="cb62-2"><a href="#cb62-2" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb62-3"><a href="#cb62-3" aria-hidden="true" tabindex="-1"></a>    state_getter: Callable[[], CardStackState],  <span class="co"># Function to get current state</span></span>
+<span id="cb62-4"><a href="#cb62-4" aria-hidden="true" tabindex="-1"></a>    state_setter: Callable[[CardStackState], <span class="va">None</span>],  <span class="co"># Function to save state</span></span>
+<span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>    get_items: Callable[[], List[Any]],  <span class="co"># Function to get current items list</span></span>
+<span id="cb62-6"><a href="#cb62-6" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback: (item, CardRenderContext) -&gt; FT</span></span>
+<span id="cb62-7"><a href="#cb62-7" aria-hidden="true" tabindex="-1"></a>    route_prefix: <span class="bu">str</span> <span class="op">=</span> <span class="st">"/card-stack"</span>,  <span class="co"># Route prefix for all card stack routes</span></span>
+<span id="cb62-8"><a href="#cb62-8" aria-hidden="true" tabindex="-1"></a>    progress_label: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Item"</span>,  <span class="co"># Label for progress indicator</span></span>
+<span id="cb62-9"><a href="#cb62-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Tuple[APIRouter, CardStackUrls]:  <span class="co"># (router, urls) tuple</span></span>
+<span id="cb62-10"><a href="#cb62-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Initialize an APIRouter with all standard card stack routes."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-scroll-navigation-scroll.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-scroll-navigation-scroll.ipynb">JS: Scroll Navigation (<code>scroll.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generator for scroll-to-nav conversion.</p>
+</blockquote>
+<section id="import-15" class="level4">
+<h4 class="anchored" data-anchor-id="import-15">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb63"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.scroll <span class="im">import</span> (</span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>    generate_scroll_nav_js</span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-12" class="level4">
+<h4 class="anchored" data-anchor-id="functions-12">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb64"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_scroll_nav_js(</span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for navigation triggers</span></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a>    disable_in_modes: Tuple[<span class="bu">str</span>, ...] <span class="op">=</span> (),  <span class="co"># Mode names where scroll nav is suppressed</span></span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JavaScript code fragment for scroll navigation</span></span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for scroll wheel to navigation conversion."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="states-states.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="states-states.ipynb">States (<code>states.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Loading, empty, and placeholder card components for the card stack viewport.</p>
+</blockquote>
+<section id="import-16" class="level4">
+<h4 class="anchored" data-anchor-id="import-16">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb65"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb65-1"><a href="#cb65-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.components.states <span class="im">import</span> (</span>
+<span id="cb65-2"><a href="#cb65-2" aria-hidden="true" tabindex="-1"></a>    render_placeholder_card,</span>
+<span id="cb65-3"><a href="#cb65-3" aria-hidden="true" tabindex="-1"></a>    render_loading_state,</span>
+<span id="cb65-4"><a href="#cb65-4" aria-hidden="true" tabindex="-1"></a>    render_empty_state</span>
+<span id="cb65-5"><a href="#cb65-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-13" class="level4">
+<h4 class="anchored" data-anchor-id="functions-13">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb66"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_placeholder_card(</span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>    placeholder_type: Literal[<span class="st">"start"</span>, <span class="st">"end"</span>],  <span class="co"># Which edge of the list</span></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Placeholder card component</span></span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render a placeholder card for viewport edges."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb67"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_loading_state(</span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>    message: <span class="bu">str</span> <span class="op">=</span> <span class="st">"Loading..."</span>,  <span class="co"># Loading message text</span></span>
+<span id="cb67-4"><a href="#cb67-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Loading component</span></span>
+<span id="cb67-5"><a href="#cb67-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render loading state with spinner and message."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb68"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb68-1"><a href="#cb68-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_empty_state(</span>
+<span id="cb68-2"><a href="#cb68-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>    title: <span class="bu">str</span> <span class="op">=</span> <span class="st">"No items available"</span>,  <span class="co"># Main empty state message</span></span>
+<span id="cb68-4"><a href="#cb68-4" aria-hidden="true" tabindex="-1"></a>    subtitle: <span class="bu">str</span> <span class="op">=</span> <span class="st">""</span>,  <span class="co"># Optional subtitle text</span></span>
+<span id="cb68-5"><a href="#cb68-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Empty state component</span></span>
+<span id="cb68-6"><a href="#cb68-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render empty state when no items exist."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-touch-navigation-touch.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-touch-navigation-touch.ipynb">JS: Touch Navigation (<code>touch.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generator for touch-to-nav conversion: swipe, drag,</p>
+</blockquote>
+<section id="import-17" class="level4">
+<h4 class="anchored" data-anchor-id="import-17">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb69"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.touch <span class="im">import</span> (</span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>    generate_touch_nav_js</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-14" class="level4">
+<h4 class="anchored" data-anchor-id="functions-14">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb70"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_touch_nav_js(</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this card stack instance</span></span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a>    button_ids: CardStackButtonIds,  <span class="co"># Button IDs for navigation triggers</span></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a>    disable_in_modes: Tuple[<span class="bu">str</span>, ...] <span class="op">=</span> (),  <span class="co"># Mode names where touch nav is suppressed</span></span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># JavaScript code fragment for touch navigation</span></span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate JS for touch gesture to navigation conversion."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="viewport-viewport.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="viewport-viewport.ipynb">Viewport (<code>viewport.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>Card stack viewport with 3-section CSS Grid layout, slot rendering,</p>
+</blockquote>
+<section id="import-18" class="level4">
+<h4 class="anchored" data-anchor-id="import-18">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb71"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.components.viewport <span class="im">import</span> (</span>
+<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>    render_slot_card,</span>
+<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a>    render_all_slots_oob,</span>
+<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a>    render_viewport</span>
+<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-15" class="level4">
+<h4 class="anchored" data-anchor-id="functions-15">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb72"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _render_mode_sync_script(</span>
+<span id="cb72-2"><a href="#cb72-2" aria-hidden="true" tabindex="-1"></a>    active_mode: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Active keyboard mode name (None = navigation)</span></span>
+<span id="cb72-3"><a href="#cb72-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Script element that syncs keyboard mode state</span></span>
+<span id="cb72-4"><a href="#cb72-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Generate script to sync keyboard navigation mode with rendered UI state."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb73"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _render_click_overlay(</span>
+<span id="cb73-2"><a href="#cb73-2" aria-hidden="true" tabindex="-1"></a>    item_index: <span class="bu">int</span>,  <span class="co"># Index of the item this slot represents</span></span>
+<span id="cb73-3"><a href="#cb73-3" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb73-4"><a href="#cb73-4" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Transparent click overlay element</span></span>
+<span id="cb73-5"><a href="#cb73-5" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render transparent click-to-focus overlay for a context card slot."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb74"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_slot_card(</span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>    slot_index: <span class="bu">int</span>,  <span class="co"># Index of this slot in the viewport (0-based)</span></span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a>    focus_slot: <span class="bu">int</span>,  <span class="co"># Which slot is the focused position</span></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># Full items list</span></span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a>    item_index: <span class="bu">int</span>,  <span class="co"># Item index (negative or &gt;= len for placeholder)</span></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Callback: (item, CardRenderContext) -&gt; FT</span></span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state</span></span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a>    oob: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,  <span class="co"># Whether to render as OOB swap</span></span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Slot content wrapper</span></span>
+<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render a single card for a viewport slot."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb75"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_all_slots_oob(</span>
+<span id="cb75-2"><a href="#cb75-2" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb75-3"><a href="#cb75-3" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state</span></span>
+<span id="cb75-4"><a href="#cb75-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb75-5"><a href="#cb75-5" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb75-6"><a href="#cb75-6" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb75-7"><a href="#cb75-7" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb75-8"><a href="#cb75-8" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> List[Any]:  <span class="co"># List of OOB elements (3 sections)</span></span>
+<span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render all viewport sections with OOB swap for granular updates."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb76"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _grid_template_rows(</span>
+<span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>    focus_position: Optional[<span class="bu">int</span>] <span class="op">=</span> <span class="va">None</span>,  <span class="co"># Focus slot offset (None=center, -1=bottom, 0=top)</span></span>
+<span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> <span class="bu">str</span>:  <span class="co"># CSS grid-template-rows value</span></span>
+<span id="cb76-4"><a href="#cb76-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Compute CSS grid-template-rows based on focus position intent."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb77"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> render_viewport(</span>
+<span id="cb77-2"><a href="#cb77-2" aria-hidden="true" tabindex="-1"></a>    card_items: List[Any],  <span class="co"># All data items</span></span>
+<span id="cb77-3"><a href="#cb77-3" aria-hidden="true" tabindex="-1"></a>    state: CardStackState,  <span class="co"># Current card stack state</span></span>
+<span id="cb77-4"><a href="#cb77-4" aria-hidden="true" tabindex="-1"></a>    config: CardStackConfig,  <span class="co"># Card stack configuration</span></span>
+<span id="cb77-5"><a href="#cb77-5" aria-hidden="true" tabindex="-1"></a>    ids: CardStackHtmlIds,  <span class="co"># HTML IDs for this instance</span></span>
+<span id="cb77-6"><a href="#cb77-6" aria-hidden="true" tabindex="-1"></a>    urls: CardStackUrls,  <span class="co"># URL bundle for navigation</span></span>
+<span id="cb77-7"><a href="#cb77-7" aria-hidden="true" tabindex="-1"></a>    render_card: Callable,  <span class="co"># Card renderer callback</span></span>
+<span id="cb77-8"><a href="#cb77-8" aria-hidden="true" tabindex="-1"></a>    form_input_name: <span class="bu">str</span> <span class="op">=</span> <span class="st">"focused_index"</span>,  <span class="co"># Name for the focused index hidden input</span></span>
+<span id="cb77-9"><a href="#cb77-9" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:  <span class="co"># Viewport component with 3-section layout</span></span>
+<span id="cb77-10"><a href="#cb77-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">"Render the card stack viewport with 3-section CSS Grid layout."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="js-viewport-height-viewport.ipynb" class="level3">
+<h3 class="anchored" data-anchor-id="js-viewport-height-viewport.ipynb">JS: Viewport Height (<code>viewport.ipynb</code>)</h3>
+<blockquote class="blockquote">
+<p>JavaScript generator for dynamic viewport height calculation.</p>
+</blockquote>
+<section id="import-19" class="level4">
+<h4 class="anchored" data-anchor-id="import-19">Import</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb78"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> cjm_fasthtml_card_stack.js.viewport <span class="im">import</span> (</span>
+<span id="cb78-2"><a href="#cb78-2" aria-hidden="true" tabindex="-1"></a>    generate_viewport_height_js</span>
+<span id="cb78-3"><a href="#cb78-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="functions-16" class="level4">
+<h4 class="anchored" data-anchor-id="functions-16">Functions</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb79"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb79-1"><a href="#cb79-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> generate_viewport_height_js(</span>
+<span id="cb79-2"><a href="#cb79-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"""</span></span>
+<span id="cb79-3"><a href="#cb79-3" aria-hidden="true" tabindex="-1"></a><span class="st">    Generate JS for dynamic viewport height calculation.</span></span>
+<span id="cb79-4"><a href="#cb79-4" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb79-5"><a href="#cb79-5" aria-hidden="true" tabindex="-1"></a><span class="st">    Uses position-based measurement to determine available space. Temporarily</span></span>
+<span id="cb79-6"><a href="#cb79-6" aria-hidden="true" tabindex="-1"></a><span class="st">    collapses the card stack to measure its natural top position, then</span></span>
+<span id="cb79-7"><a href="#cb79-7" aria-hidden="true" tabindex="-1"></a><span class="st">    calculates available height based on actual visual positions.</span></span>
+<span id="cb79-8"><a href="#cb79-8" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb79-9"><a href="#cb79-9" aria-hidden="true" tabindex="-1"></a><span class="st">    This approach handles margin collapsing, flex gap, grid gap, and any</span></span>
+<span id="cb79-10"><a href="#cb79-10" aria-hidden="true" tabindex="-1"></a><span class="st">    other CSS layout mechanism automatically.</span></span>
+<span id="cb79-11"><a href="#cb79-11" aria-hidden="true" tabindex="-1"></a><span class="st">    </span></span>
+<span id="cb79-12"><a href="#cb79-12" aria-hidden="true" tabindex="-1"></a><span class="st">    Debug mode: Set `window.cardStackDebug = true` in browser console</span></span>
+<span id="cb79-13"><a href="#cb79-13" aria-hidden="true" tabindex="-1"></a><span class="st">    to log all intermediate calculation values.</span></span>
+<span id="cb79-14"><a href="#cb79-14" aria-hidden="true" tabindex="-1"></a><span class="st">    """</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/cj-mills\.github\.io\/cjm-fasthtml-card-stack");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/cj-mills/cjm-fasthtml-card-stack/issues/new" class="toc-action"><i class="bi bi-github"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>
