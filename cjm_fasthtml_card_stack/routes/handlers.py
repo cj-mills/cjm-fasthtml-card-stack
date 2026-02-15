@@ -44,6 +44,7 @@ def build_nav_response(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     """Build full OOB response for navigation: slots + progress + focus inputs."""
     slots_oob = build_slots_response(
@@ -54,7 +55,7 @@ def build_nav_response(
         state.focused_index, len(card_items), ids,
         label=progress_label, oob=True,
     )
-    focus_oob = render_focus_oob(state.focused_index, ids)
+    focus_oob = render_focus_oob(state.focused_index, ids, form_input_name=form_input_name)
     return (*slots_oob, progress_oob, *focus_oob)
 
 # %% ../../nbs/routes/handlers.ipynb #h1000008
@@ -67,6 +68,7 @@ def card_stack_navigate(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     """Navigate to a different item. Mutates state.focused_index in place."""
     total = len(card_items)
@@ -91,6 +93,7 @@ def card_stack_navigate(
     return build_nav_response(
         card_items, state, config, ids, urls, render_card,
         progress_label=progress_label,
+        form_input_name=form_input_name,
     )
 
 # %% ../../nbs/routes/handlers.ipynb #h1000009
@@ -103,6 +106,7 @@ def card_stack_navigate_to_index(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     """Navigate to a specific item index. Mutates state.focused_index in place."""
     total = len(card_items)
@@ -116,6 +120,7 @@ def card_stack_navigate_to_index(
     return build_nav_response(
         card_items, state, config, ids, urls, render_card,
         progress_label=progress_label,
+        form_input_name=form_input_name,
     )
 
 # %% ../../nbs/routes/handlers.ipynb #h1000011
