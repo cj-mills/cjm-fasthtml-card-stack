@@ -198,18 +198,15 @@ def _generate_auto_adjust_js(
                     ns._autoUpdateCount(newCount);
                 }}
             }} else {{
-                // No overflow — try to add more cards incrementally
-                if (currentCount >= totalItems) return;
-
-                const newCount = Math.min(totalItems, currentCount + _AUTO_STEP);
-                if (newCount > currentCount) {{
-                    // Snapshot current state before growth
-                    _preGrowthCount = currentCount;
-                    _preGrowthItemIds = _snapshotItemIds();
-                    _autoGrowing = true;
-                    _autoAdjusting = true;
-                    ns._autoUpdateCount(newCount);
-                }}
+                // No overflow — grow incrementally (including beyond total
+                // items, which renders placeholder cards to fill viewport)
+                const newCount = currentCount + _AUTO_STEP;
+                // Snapshot current state before growth
+                _preGrowthCount = currentCount;
+                _preGrowthItemIds = _snapshotItemIds();
+                _autoGrowing = true;
+                _autoAdjusting = true;
+                ns._autoUpdateCount(newCount);
             }}
         }};
 
