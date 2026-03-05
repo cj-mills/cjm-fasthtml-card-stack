@@ -66,59 +66,59 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_html_ids
     components_controls --> core_config
+    components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_models
-    components_viewport --> core_html_ids
     components_viewport --> helpers_focus
-    components_viewport --> core_config
-    components_viewport --> components_states
+    components_viewport --> core_models
     components_viewport --> core_constants
+    components_viewport --> core_config
+    components_viewport --> core_html_ids
+    components_viewport --> components_states
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_models
-    js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_constants
     js_auto_adjust --> core_config
+    js_auto_adjust --> core_html_ids
+    js_auto_adjust --> core_models
     js_controls --> core_constants
-    js_controls --> core_models
-    js_controls --> core_html_ids
     js_controls --> core_config
-    js_core --> core_html_ids
-    js_core --> core_config
+    js_controls --> core_html_ids
+    js_controls --> core_models
     js_core --> js_controls
     js_core --> core_constants
-    js_core --> js_navigation
-    js_core --> core_models
-    js_core --> core_button_ids
     js_core --> js_auto_adjust
     js_core --> js_viewport
-    js_core --> js_touch
+    js_core --> js_navigation
     js_core --> js_scroll
+    js_core --> core_config
+    js_core --> js_touch
+    js_core --> core_models
+    js_core --> core_html_ids
+    js_core --> core_button_ids
     js_navigation --> core_button_ids
-    js_scroll --> core_constants
     js_scroll --> core_html_ids
+    js_scroll --> core_constants
     js_scroll --> core_button_ids
     js_touch --> core_constants
     js_touch --> core_html_ids
     js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_html_ids
-    keyboard_actions --> core_config
-    keyboard_actions --> core_button_ids
     keyboard_actions --> js_core
+    keyboard_actions --> core_config
     keyboard_actions --> core_models
+    keyboard_actions --> core_html_ids
+    keyboard_actions --> core_button_ids
     routes_handlers --> core_models
-    routes_handlers --> core_html_ids
-    routes_handlers --> core_config
     routes_handlers --> components_progress
+    routes_handlers --> core_config
     routes_handlers --> helpers_focus
     routes_handlers --> components_viewport
-    routes_router --> core_models
-    routes_router --> core_html_ids
-    routes_router --> core_config
+    routes_handlers --> core_html_ids
     routes_router --> routes_handlers
+    routes_router --> core_models
+    routes_router --> core_config
+    routes_router --> core_html_ids
 ```
 
 *53 cross-module dependencies detected*
@@ -698,6 +698,7 @@ def build_nav_response(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     "Build full OOB response for navigation: slots + progress + focus inputs."
 ```
@@ -712,6 +713,7 @@ def card_stack_navigate(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     "Navigate to a different item. Mutates state.focused_index in place."
 ```
@@ -726,6 +728,7 @@ def card_stack_navigate_to_index(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
+    form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus)
     "Navigate to a specific item index. Mutates state.focused_index in place."
 ```
@@ -1208,17 +1211,13 @@ from cjm_fasthtml_card_stack.js.viewport import (
 
 ``` python
 def generate_viewport_height_js(
+    ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
+    container_id: str = "",  # Unused — kept for API compatibility
+) -> str:  # JavaScript code fragment for viewport height calculation
     """
-    Generate JS for dynamic viewport height calculation.
+    Generate JS for dynamic viewport height calculation via cjm-fasthtml-viewport-fit.
     
-    Uses position-based measurement to determine available space. Temporarily
-    collapses the card stack to measure its natural top position, then
-    calculates available height based on actual visual positions.
-    
-    This approach handles margin collapsing, flex gap, grid gap, and any
-    other CSS layout mechanism automatically.
-    
-    Debug mode: Set `window.cardStackDebug = true` in browser console
-    to log all intermediate calculation values.
+    Delegates to the viewport-fit library's individual generator functions.
+    The card stack coordinator handles HTMX settle events separately.
     """
 ```

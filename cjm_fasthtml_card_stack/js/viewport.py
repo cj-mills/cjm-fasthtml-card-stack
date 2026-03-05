@@ -7,174 +7,48 @@ __all__ = ['generate_viewport_height_js']
 
 # %% ../../nbs/js/viewport.ipynb #jv000003
 from ..core.html_ids import CardStackHtmlIds
+from cjm_fasthtml_viewport_fit.models import ViewportFitConfig
+from cjm_fasthtml_viewport_fit.js import (
+    generate_debug_helpers_js,
+    generate_space_below_js,
+    generate_calculate_height_js,
+    generate_resize_handler_js,
+    generate_sibling_observer_js,
+    generate_init_js,
+)
 
 # %% ../../nbs/js/viewport.ipynb #jv000005
 def generate_viewport_height_js(
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
-    container_id: str = "",  # Consumer's parent container ID (empty = use card stack parent)
+    container_id: str = "",  # Unused — kept for API compatibility
 ) -> str:  # JavaScript code fragment for viewport height calculation
-    """Generate JS for dynamic viewport height calculation.
+    """Generate JS for dynamic viewport height calculation via cjm-fasthtml-viewport-fit.
 
-    Uses position-based measurement to determine available space. Temporarily
-    collapses the card stack to measure its natural top position, then
-    calculates available height based on actual visual positions.
-
-    This approach handles margin collapsing, flex gap, grid gap, and any
-    other CSS layout mechanism automatically.
-
-    Debug mode: Set `window.cardStackDebug = true` in browser console
-    to log all intermediate calculation values.
+    Delegates to the viewport-fit library's individual generator functions.
+    The card stack coordinator handles HTMX settle events separately.
     """
-    handler_key = f"_csResizeHandler_{ids.prefix.replace('-', '_')}"
-    prefix = ids.prefix
+    config = ViewportFitConfig(
+        namespace=ids.prefix,
+        target_id=ids.card_stack,
+        inner_id=ids.card_stack_inner,
+        min_height=200,
+        debounce_ms=100,
+        scroll_to_top=True,
+        enable_htmx_settle=False,
+        observe_siblings=True,
+        resize_callback="if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();",
+    )
 
-    # Build container resolution logic — guarded against null for SPA navigation
-    if container_id:
-        container_resolution = f"""
-            const container = document.getElementById('{container_id}');"""
-    else:
-        container_resolution = f"""
-            const _csEl = document.getElementById('{ids.card_stack}');
-            if (!_csEl) return 400;
-            const container = _csEl.parentElement;"""
+    parts = [
+        "// === Viewport Height Calculation ===",
+        generate_debug_helpers_js(config),
+        generate_space_below_js(config),
+        generate_calculate_height_js(config),
+        generate_resize_handler_js(config),
+        generate_sibling_observer_js(config),
+        "ns.recalculateHeight = _calculateAndSetHeight;",
+        "ns._setupSiblingObserver = _setupSiblingObserver;",
+        generate_init_js(config),
+    ]
 
-    return f"""
-        // === Viewport Height Calculation ===
-        const _debug = () => window.cardStackDebug === true;
-        const _log = (...args) => {{ if (_debug()) console.log('[{prefix}]', ...args); }};
-
-        function calculateSpaceBelowCardStack(cardStack) {{
-            // Walk up the DOM tree from the card stack and measure space below.
-            // Uses position-based measurement: only counts elements that are
-            // visually positioned below the card stack (handles flex rows).
-            let spaceBelow = 0;
-            let currentElement = cardStack;
-            let currentRect = currentElement.getBoundingClientRect();
-            let parent = cardStack.parentElement;
-            let level = 0;
-
-            while (parent && parent !== document.documentElement) {{
-                const parentRect = parent.getBoundingClientRect();
-                const parentStyles = getComputedStyle(parent);
-                const paddingBottom = parseFloat(parentStyles.paddingBottom) || 0;
-                const borderBottom = parseFloat(parentStyles.borderBottomWidth) || 0;
-
-                _log(`spaceBelow L${{level}}: parent=${{parent.tagName}}#${{parent.id || '(no id)'}}, padding=${{paddingBottom}}, border=${{borderBottom}}`);
-
-                // Find siblings that come after currentElement and are positioned below
-                let foundCurrent = false;
-                for (const sibling of parent.children) {{
-                    if (sibling === currentElement) {{ foundCurrent = true; continue; }}
-                    if (!foundCurrent) continue;
-                    if (sibling.nodeType !== Node.ELEMENT_NODE) continue;
-                    const tag = sibling.tagName;
-                    if (tag === 'SCRIPT' || tag === 'STYLE') continue;
-                    if (tag === 'INPUT' && sibling.type === 'hidden') continue;
-                    const s = getComputedStyle(sibling);
-                    if (s.display === 'none') continue;
-
-                    const siblingRect = sibling.getBoundingClientRect();
-                    
-                    // Skip siblings that are beside (not below) in flex/grid rows
-                    if (siblingRect.top < currentRect.bottom) {{
-                        _log(`  skip (beside): ${{tag}}#${{sibling.id || '(no id)'}}, top=${{siblingRect.top}} < bottom=${{currentRect.bottom}}`);
-                        continue;
-                    }}
-
-                    // Measure visual space: gap from current bottom to sibling bottom
-                    const visualSpace = siblingRect.bottom - currentRect.bottom;
-                    spaceBelow += visualSpace;
-                    _log(`  below: ${{tag}}#${{sibling.id || '(no id)'}}, visualSpace=${{visualSpace}}`);
-                    
-                    // Update currentRect to include this sibling for next iteration
-                    currentRect = {{ bottom: siblingRect.bottom, top: currentRect.top }};
-                }}
-
-                // Add parent's padding and border
-                spaceBelow += paddingBottom + borderBottom;
-
-                currentElement = parent;
-                currentRect = parent.getBoundingClientRect();
-                parent = parent.parentElement;
-                level++;
-            }}
-            return spaceBelow;
-        }}
-
-        function calculateAndSetViewportHeight() {{
-            {container_resolution}
-            const cardStack = document.getElementById('{ids.card_stack}');
-            const cardStackInner = document.getElementById('{ids.card_stack_inner}');
-            if (!container || !cardStack) {{
-                _log('ERROR: container or cardStack not found');
-                return 400;
-            }}
-
-            _log('=== calculateAndSetViewportHeight ===');
-            _log('container:', container.id || '(no id)');
-
-            // Save current height to restore if needed
-            const savedHeight = cardStack.style.height;
-            const savedMinHeight = cardStack.style.minHeight;
-            const savedMaxHeight = cardStack.style.maxHeight;
-
-            // Temporarily collapse card stack to measure its natural top position
-            // This allows us to measure spaceAbove accurately without the card stack
-            // height affecting the layout.
-            cardStack.style.height = '0px';
-            cardStack.style.minHeight = '0px';
-            cardStack.style.maxHeight = '0px';
-            if (cardStackInner) cardStackInner.style.height = '0px';
-
-            // Force reflow to apply temporary styles
-            cardStack.offsetHeight;
-
-            // Measure positions with collapsed card stack
-            const cardStackRect = cardStack.getBoundingClientRect();
-            const spaceAbove = cardStackRect.top;  // Distance from viewport top to card stack
-
-            _log('spaceAbove (position-based):', spaceAbove);
-
-            // Measure space below the card stack (siblings below + parent padding + ancestors)
-            const spaceBelow = calculateSpaceBelowCardStack(cardStack);
-
-            const windowHeight = window.innerHeight;
-            const rawHeight = windowHeight - spaceAbove - spaceBelow;
-            const viewportHeight = Math.floor(Math.max(200, rawHeight));
-
-            _log('windowHeight:', windowHeight);
-            _log('spaceAbove:', spaceAbove);
-            _log('spaceBelow:', spaceBelow);
-            _log('rawHeight:', rawHeight);
-            _log('viewportHeight:', viewportHeight, rawHeight < 200 ? '(clamped to min)' : '');
-
-            // Set the calculated height
-            cardStack.style.height = viewportHeight + 'px';
-            cardStack.style.maxHeight = viewportHeight + 'px';
-            cardStack.style.minHeight = viewportHeight + 'px';
-            if (cardStackInner) cardStackInner.style.height = viewportHeight + 'px';
-
-            return viewportHeight;
-        }}
-
-        function _debounce(fn, delay) {{
-            let tid;
-            return function(...args) {{ clearTimeout(tid); tid = setTimeout(() => fn.apply(this, args), delay); }};
-        }}
-
-        const _debouncedResize = _debounce(function() {{
-            calculateAndSetViewportHeight();
-            if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
-        }}, 100);
-
-        // Remove old resize listener from previous IIFE (handles HTMX page
-        // navigation that re-executes this script without a full page reload).
-        if (window.{handler_key}) {{
-            window.removeEventListener('resize', window.{handler_key});
-        }}
-        window.{handler_key} = _debouncedResize;
-        window.addEventListener('resize', _debouncedResize);
-
-        // Expose on namespace
-        ns.recalculateHeight = calculateAndSetViewportHeight;
-    """
+    return "\n".join(parts)
