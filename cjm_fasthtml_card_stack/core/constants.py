@@ -52,6 +52,6 @@ def auto_count_storage_key(
     return f"{prefix}-card-count-auto"
 
 # %% ../../nbs/core/constants.ipynb #e1000014
-DEFAULT_VISIBLE_COUNT: int = 3  # Default number of cards visible in viewport
+DEFAULT_VISIBLE_COUNT: int = 1  # Default number of cards visible in viewport (auto-adjust grows from here)
 DEFAULT_CARD_WIDTH: int = 80    # Default card stack width in rem
 DEFAULT_CARD_SCALE: int = 100   # Default card scale percentage

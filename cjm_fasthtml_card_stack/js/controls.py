@@ -147,7 +147,10 @@ def _generate_card_count_mgmt_js(
         const _VALID_COUNTS = [{valid_counts}];
 
         function _isAutoMode() {{
-            try {{ return localStorage.getItem(_AUTO_KEY) === 'true'; }} catch (e) {{ return false; }}
+            try {{
+                const v = localStorage.getItem(_AUTO_KEY);
+                return v === null || v === 'true';
+            }} catch (e) {{ return true; }}
         }}
 
         function _getStoredCount() {{
@@ -163,6 +166,7 @@ def _generate_card_count_mgmt_js(
             const count = parseInt(value);
             if (!_VALID_COUNTS.includes(count)) return;
             try {{ localStorage.setItem(_COUNT_KEY, count); }} catch (e) {{}}
+            try {{ localStorage.setItem(_AUTO_KEY, 'false'); }} catch (e) {{}}
             const cardStack = document.getElementById('{ids.card_stack}');
             if (cardStack) cardStack.dataset.visibleCount = count;
             if ('{urls.update_viewport}') {{
@@ -195,7 +199,7 @@ def _generate_card_count_mgmt_js(
                 try {{ localStorage.setItem(_AUTO_KEY, 'true'); }} catch (e) {{}}
                 if (ns.triggerAutoAdjust) ns.triggerAutoAdjust();
             }} else {{
-                try {{ localStorage.removeItem(_AUTO_KEY); }} catch (e) {{}}
+                try {{ localStorage.setItem(_AUTO_KEY, 'false'); }} catch (e) {{}}
                 if (ns._cancelAutoGrowth) ns._cancelAutoGrowth();
                 ns.updateCardCount(parseInt(value));
             }}

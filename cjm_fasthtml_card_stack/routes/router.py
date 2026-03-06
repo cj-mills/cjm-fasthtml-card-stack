@@ -99,13 +99,14 @@ def init_card_stack_router(
     # -----------------------------------------------------------------
 
     @router
-    def update_viewport(visible_count: int) -> Any:
+    def update_viewport(visible_count: int, is_auto: str = "true") -> Any:
         """Update viewport with new card count (OOB section swaps)."""
         state = state_getter()
         items = get_items()
         result = card_stack_update_viewport(
             visible_count=visible_count, card_items=items, state=state,
             config=config, ids=ids, urls=urls, render_card=render_card,
+            is_auto=(is_auto == "true"),
         )
         state_setter(state)
         return result

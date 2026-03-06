@@ -14,11 +14,12 @@ from typing import Optional
 class CardStackState:
     """Viewport state for a card stack instance."""
     focused_index: int = 0              # Index of focused item in the items list
-    visible_count: int = 3              # Number of card slots visible in viewport
+    visible_count: int = 1              # Number of card slots visible in viewport (auto-adjust grows from here)
     card_width: int = 80               # Max width of card stack inner container in rem
     card_scale: int = 100              # Content scale percentage (50-200)
     active_mode: Optional[str] = None  # Current interaction mode name (consumer-defined)
     focus_position: Optional[int] = None  # Slot offset for focused card (None=center, -1=bottom)
+    is_auto_mode: bool = True          # Whether auto-adjust mode is active
 
 # %% ../../nbs/core/models.ipynb #a1000010
 @dataclass

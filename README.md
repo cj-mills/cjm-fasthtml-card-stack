@@ -70,32 +70,32 @@ graph LR
     components_controls --> core_config
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_html_ids
-    components_viewport --> core_constants
-    components_viewport --> core_models
-    components_viewport --> core_config
     components_viewport --> components_states
     components_viewport --> helpers_focus
+    components_viewport --> core_html_ids
+    components_viewport --> core_models
+    components_viewport --> core_config
+    components_viewport --> core_constants
     helpers_focus --> core_html_ids
     js_auto_adjust --> core_html_ids
-    js_auto_adjust --> core_config
     js_auto_adjust --> core_constants
     js_auto_adjust --> core_models
+    js_auto_adjust --> core_config
     js_controls --> core_constants
     js_controls --> core_html_ids
-    js_controls --> core_config
     js_controls --> core_models
-    js_core --> core_html_ids
-    js_core --> core_constants
-    js_core --> core_button_ids
-    js_core --> core_config
-    js_core --> js_viewport
-    js_core --> js_controls
-    js_core --> js_navigation
-    js_core --> js_scroll
+    js_controls --> core_config
     js_core --> js_touch
+    js_core --> core_constants
+    js_core --> js_controls
+    js_core --> core_html_ids
+    js_core --> js_viewport
     js_core --> core_models
+    js_core --> js_scroll
+    js_core --> core_button_ids
     js_core --> js_auto_adjust
+    js_core --> js_navigation
+    js_core --> core_config
     js_navigation --> core_button_ids
     js_scroll --> core_constants
     js_scroll --> core_html_ids
@@ -104,20 +104,20 @@ graph LR
     js_touch --> core_html_ids
     js_touch --> core_button_ids
     js_viewport --> core_html_ids
+    keyboard_actions --> js_core
     keyboard_actions --> core_html_ids
+    keyboard_actions --> core_models
     keyboard_actions --> core_button_ids
     keyboard_actions --> core_config
-    keyboard_actions --> js_core
-    keyboard_actions --> core_models
+    routes_handlers --> components_viewport
     routes_handlers --> core_html_ids
     routes_handlers --> core_models
-    routes_handlers --> core_config
     routes_handlers --> helpers_focus
-    routes_handlers --> components_viewport
+    routes_handlers --> core_config
     routes_handlers --> components_progress
     routes_router --> core_html_ids
-    routes_router --> routes_handlers
     routes_router --> core_models
+    routes_router --> routes_handlers
     routes_router --> core_config
 ```
 
@@ -385,7 +385,6 @@ class CardStackConfig:
     
     prefix: str = field(...)  # HTML ID prefix (auto-generated if omitted)
     visible_count_options: Tuple[int, ...] = (1, 3, 5, 7, 9)  # Choices for card count dropdown
-    auto_visible_count: bool = True  # Whether "Auto" option appears in card count dropdown
     card_width_min: int = 30  # Width slider minimum (rem)
     card_width_max: int = 120  # Width slider maximum (rem)
     card_width_step: int = 5  # Width slider step (rem)
@@ -475,7 +474,7 @@ TOUCH_MOMENTUM_MIN_VELOCITY: float = 0.5
 TOUCH_MOMENTUM_FRICTION: float = 0.95
 TOUCH_PINCH_THRESHOLD: int = 30
 TOUCH_VELOCITY_SAMPLES: int = 5
-DEFAULT_VISIBLE_COUNT: int = 3
+DEFAULT_VISIBLE_COUNT: int = 1
 DEFAULT_CARD_WIDTH: int = 80
 DEFAULT_CARD_SCALE: int = 100
 ```
@@ -518,8 +517,8 @@ def render_scale_slider(
 def render_card_count_select(
     config: CardStackConfig,  # Card stack configuration
     ids: CardStackHtmlIds,  # HTML IDs for this instance
-    current_count: int = 3,  # Currently selected card count
-    is_auto_mode: bool = False,  # Whether auto-adjust mode is active
+    current_count: int = 1,  # Currently selected card count
+    is_auto_mode: bool = True,  # Whether auto-adjust mode is active
 ) -> Any:  # Card count dropdown component
     "Render the card count dropdown selector."
 ```
@@ -742,8 +741,9 @@ def card_stack_update_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
+    is_auto: bool = True,  # Whether this update came from auto-adjust mode
 ) -> Tuple:  # OOB section elements (3 viewport sections)
-    "Update viewport with new card count via OOB section swaps. Mutates state.visible_count in place."
+    "Update viewport with new card count via OOB section swaps. Mutates state in place."
 ```
 
 ``` python
@@ -916,11 +916,12 @@ class CardStackState:
     "Viewport state for a card stack instance."
     
     focused_index: int = 0  # Index of focused item in the items list
-    visible_count: int = 3  # Number of card slots visible in viewport
+    visible_count: int = 1  # Number of card slots visible in viewport (auto-adjust grows from here)
     card_width: int = 80  # Max width of card stack inner container in rem
     card_scale: int = 100  # Content scale percentage (50-200)
     active_mode: Optional[str]  # Current interaction mode name (consumer-defined)
     focus_position: Optional[int]  # Slot offset for focused card (None=center, -1=bottom)
+    is_auto_mode: bool = True  # Whether auto-adjust mode is active
 ```
 
 ``` python

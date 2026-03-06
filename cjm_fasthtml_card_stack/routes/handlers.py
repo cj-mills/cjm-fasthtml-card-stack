@@ -132,9 +132,11 @@ def card_stack_update_viewport(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
+    is_auto: bool = True,  # Whether this update came from auto-adjust mode
 ) -> Tuple:  # OOB section elements (3 viewport sections)
-    """Update viewport with new card count via OOB section swaps. Mutates state.visible_count in place."""
+    """Update viewport with new card count via OOB section swaps. Mutates state in place."""
     state.visible_count = visible_count
+    state.is_auto_mode = is_auto
     return tuple(build_slots_response(
         card_items=card_items,
         state=state,

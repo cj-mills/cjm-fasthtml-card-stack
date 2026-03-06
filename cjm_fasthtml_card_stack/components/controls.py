@@ -93,17 +93,13 @@ def render_scale_slider(
 def render_card_count_select(
     config: CardStackConfig,  # Card stack configuration
     ids: CardStackHtmlIds,  # HTML IDs for this instance
-    current_count: int = 3,  # Currently selected card count
-    is_auto_mode: bool = False,  # Whether auto-adjust mode is active
+    current_count: int = 1,  # Currently selected card count
+    is_auto_mode: bool = True,  # Whether auto-adjust mode is active
 ) -> Any:  # Card count dropdown component
     """Render the card count dropdown selector."""
     js_fn = f"window.cardStacks['{config.prefix}'].handleCountChange(this.value)"
 
-    options = []
-
-    # Auto option — selected if is_auto_mode is True
-    if config.auto_visible_count:
-        options.append(Option("Auto", value="auto", selected=is_auto_mode))
+    options = [Option("Auto", value="auto", selected=is_auto_mode)]
 
     # Numeric options — only selected if NOT in auto mode
     options.extend(

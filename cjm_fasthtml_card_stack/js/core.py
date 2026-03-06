@@ -187,7 +187,7 @@ def generate_card_stack_js(
     width_js = _generate_width_mgmt_js(ids, config, urls)
     scale_js = _generate_scale_mgmt_js(ids, config, urls)
     count_js = _generate_card_count_mgmt_js(ids, config, urls)
-    auto_js = _generate_auto_adjust_js(ids, config, urls, focus_position) if config.auto_visible_count else ""
+    auto_js = _generate_auto_adjust_js(ids, config, urls, focus_position)
     global_cbs_js = _generate_global_callbacks_js(config)
     coordinator_js = _generate_coordinator_js(ids, config, focus_position)
 
