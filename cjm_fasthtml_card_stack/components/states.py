@@ -43,7 +43,7 @@ def render_placeholder_card(
                 cls=combine_classes(
                     font_size.lg, italic,
                     text_dui.base_content.opacity(30),
-                    p.y(4)
+                    # p.y(4)
                 )
             ),
             cls=combine_classes(card_body, p(4))
