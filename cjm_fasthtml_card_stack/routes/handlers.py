@@ -61,12 +61,12 @@ def build_nav_response(
 
     result = (*slots_oob, progress_oob, *focus_oob)
 
-    # TEMPORARILY DISABLED for debugging — scrollbar OOB
-    # if config.show_scrollbar:
-    #     scrollbar_oob = render_card_stack_scrollbar(
-    #         state, config, len(card_items), oob=True,
-    #     )
-    #     result = result + (scrollbar_oob,)
+    # Scrollbar OOB keeps track data-attributes in sync
+    if config.show_scrollbar:
+        scrollbar_oob = render_card_stack_scrollbar(
+            state, config, len(card_items), oob=True,
+        )
+        result = result + (scrollbar_oob,)
 
     return result
 
