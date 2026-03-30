@@ -182,10 +182,13 @@ def generate_card_stack_js(
     prefix = config.prefix
     extra_js = "\n".join(extra_scripts)
 
+    # The card stack ID doubles as the keyboard zone ID
+    zone_id = ids.card_stack
+
     # Collect all fragments
     viewport_js = generate_viewport_height_js(ids, container_id)
-    scroll_js = generate_scroll_nav_js(ids, button_ids, config.disable_scroll_in_modes)
-    touch_js = generate_touch_nav_js(ids, button_ids, config.disable_scroll_in_modes)
+    scroll_js = generate_scroll_nav_js(ids, button_ids, config.disable_scroll_in_modes, zone_id=zone_id)
+    touch_js = generate_touch_nav_js(ids, button_ids, config.disable_scroll_in_modes, zone_id=zone_id)
     page_nav_js = generate_page_nav_js(button_ids)
     width_js = _generate_width_mgmt_js(ids, config, urls)
     scale_js = _generate_scale_mgmt_js(ids, config, urls)
@@ -198,11 +201,18 @@ def generate_card_stack_js(
     scrollbar_js = ""
     if config.show_scrollbar:
         sb_ids = ScrollbarIds(prefix=prefix)
-        scrollbar_js = _sb_generate_scrollbar_js(
+        # Zone activation callback: activates this card stack's keyboard zone on scrollbar interaction
+        sb_on_interact = f"_cs_{prefix.replace('-', '_')}_scrollbarActivate"
+        scrollbar_js = f"""
+        window['{sb_on_interact}'] = function() {{
+            if (window.kbNav && window.kbNav.setActiveZone) window.kbNav.setActiveZone('{zone_id}');
+        }};
+        """ + _sb_generate_scrollbar_js(
             ids=sb_ids,
             position_input_id=ids.focused_index_input,
             nav_url=urls.nav_to_index,
             nav_param="target_index",
+            on_interact=sb_on_interact,
         )
 
     return Script(f"""(function() {{

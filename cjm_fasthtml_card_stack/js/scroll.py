@@ -17,6 +17,7 @@ def generate_scroll_nav_js(
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
     button_ids: CardStackButtonIds,  # Button IDs for navigation triggers
     disable_in_modes: Tuple[str, ...] = (),  # Mode names where scroll nav is suppressed
+    zone_id: str = "",  # Keyboard zone ID to activate on scroll interaction
 ) -> str:  # JavaScript code fragment for scroll navigation
     """Generate JS for scroll wheel to navigation conversion."""
     # Build mode check
@@ -36,6 +37,12 @@ def generate_scroll_nav_js(
     else:
         mode_check = ""
         mode_guard = ""
+
+    # Zone activation on scroll interaction
+    zone_activate_js = (
+        f"if (window.kbNav && window.kbNav.setActiveZone) window.kbNav.setActiveZone('{zone_id}');"
+        if zone_id else ""
+    )
 
     # Threshold for classifying input as trackpad vs mouse wheel.
     # Mouse wheels typically send |deltaY| >= 50 per tick;
@@ -63,6 +70,9 @@ def generate_scroll_nav_js(
             cardStack.addEventListener('wheel', function(evt) {{
                 {mode_guard}
                 evt.preventDefault();
+
+                // Activate keyboard zone on scroll interaction
+                {zone_activate_js}
 
                 // Normalize deltaY based on deltaMode
                 let deltaY = evt.deltaY;

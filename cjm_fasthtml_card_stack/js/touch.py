@@ -21,6 +21,7 @@ def generate_touch_nav_js(
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
     button_ids: CardStackButtonIds,  # Button IDs for navigation triggers
     disable_in_modes: Tuple[str, ...] = (),  # Mode names where touch nav is suppressed
+    zone_id: str = "",  # Keyboard zone ID to activate on touch interaction
 ) -> str:  # JavaScript code fragment for touch navigation
     """Generate JS for touch gesture to navigation conversion."""
     # Build mode check (same pattern as scroll.ipynb)
@@ -46,10 +47,16 @@ def generate_touch_nav_js(
         mode_guard = ""
         momentum_mode_guard = ""
 
+    # Zone activation on touch interaction
+    zone_activate_js = (
+        f"if (window.kbNav && window.kbNav.setActiveZone) window.kbNav.setActiveZone('{zone_id}');"
+        if zone_id else ""
+    )
+
     return f"""
         // === Touch Navigation ===
         // Uses Pointer Events + setPointerCapture so that events survive
-        // HTMX OOB DOM swaps that replace the original touch target mid-drag.
+        // HTMX OOB DOM swaps that replace elements under the finger mid-drag.
         const _touchState = {{
             pointers: new Map(),
             primaryId: null,
@@ -121,6 +128,9 @@ def generate_touch_nav_js(
                 if (evt.pointerType !== 'touch') return;
                 {mode_guard}
                 _stopMomentum();
+
+                // Activate keyboard zone on touch interaction
+                {zone_activate_js}
 
                 _touchState.pointers.set(evt.pointerId, {{ x: evt.clientX, y: evt.clientY }});
 
