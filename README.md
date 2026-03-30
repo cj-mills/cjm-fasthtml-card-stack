@@ -70,54 +70,54 @@ graph LR
     components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> helpers_focus
-    components_viewport --> core_config
     components_viewport --> core_models
     components_viewport --> core_constants
+    components_viewport --> helpers_focus
     components_viewport --> components_states
+    components_viewport --> core_config
     components_viewport --> core_html_ids
     helpers_focus --> core_html_ids
+    js_auto_adjust --> core_constants
     js_auto_adjust --> core_config
     js_auto_adjust --> core_html_ids
-    js_auto_adjust --> core_constants
     js_auto_adjust --> core_models
     js_controls --> core_constants
     js_controls --> core_config
     js_controls --> core_html_ids
     js_controls --> core_models
-    js_core --> core_button_ids
-    js_core --> core_config
     js_core --> js_controls
     js_core --> core_constants
     js_core --> core_models
+    js_core --> js_scroll
     js_core --> js_navigation
+    js_core --> js_auto_adjust
+    js_core --> core_button_ids
+    js_core --> core_config
     js_core --> js_touch
     js_core --> core_html_ids
     js_core --> js_viewport
-    js_core --> js_scroll
-    js_core --> js_auto_adjust
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
-    js_touch --> core_constants
-    js_touch --> core_button_ids
+    js_scroll --> core_button_ids
     js_touch --> core_html_ids
+    js_touch --> core_button_ids
+    js_touch --> core_constants
     js_viewport --> core_html_ids
-    keyboard_actions --> core_button_ids
-    keyboard_actions --> core_config
-    keyboard_actions --> js_core
     keyboard_actions --> core_models
+    keyboard_actions --> core_button_ids
+    keyboard_actions --> js_core
+    keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
-    routes_handlers --> core_config
     routes_handlers --> helpers_focus
     routes_handlers --> core_models
     routes_handlers --> components_viewport
-    routes_handlers --> core_html_ids
+    routes_handlers --> core_config
     routes_handlers --> components_progress
-    routes_router --> core_config
+    routes_handlers --> core_html_ids
     routes_router --> routes_handlers
     routes_router --> core_models
+    routes_router --> core_config
     routes_router --> core_html_ids
 ```
 
@@ -393,6 +393,7 @@ class CardStackConfig:
     card_scale_step: int = 10  # Scale slider step (%)
     click_to_focus: bool = False  # Whether context cards get transparent click overlay
     disable_scroll_in_modes: Tuple[str, ...] = ()  # Mode names where scroll-to-nav is suppressed
+    show_scrollbar: bool = True  # Show virtual scrollbar for mouse-driven scrubbing
     style: CardStackStyleConfig = field(...)  # Visual styling config
 ```
 
@@ -698,8 +699,8 @@ def build_nav_response(
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
     form_input_name: str = "focused_index",  # Name for the focused index hidden input
-) -> Tuple:  # OOB elements (slots + progress + focus)
-    "Build full OOB response for navigation: slots + progress + focus inputs."
+) -> Tuple:  # OOB elements (slots + progress + focus + scrollbar)
+    "Build full OOB response for navigation: slots + progress + focus inputs + scrollbar."
 ```
 
 ``` python
@@ -742,7 +743,7 @@ def card_stack_update_viewport(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     is_auto: bool = True,  # Whether this update came from auto-adjust mode
-) -> Tuple:  # OOB section elements (3 viewport sections)
+) -> Tuple:  # OOB section elements (3 viewport sections + scrollbar)
     "Update viewport with new card count via OOB section swaps. Mutates state in place."
 ```
 
@@ -1127,6 +1128,7 @@ def generate_touch_nav_js(
 from cjm_fasthtml_card_stack.components.viewport import (
     render_slot_card,
     render_all_slots_oob,
+    render_card_stack_scrollbar,
     render_viewport
 )
 ```
@@ -1181,6 +1183,25 @@ def _grid_template_rows(
     focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # CSS grid-template-rows value
     "Compute CSS grid-template-rows based on focus position intent."
+```
+
+``` python
+def _map_to_scrollbar(
+    state: CardStackState,
+    config: CardStackConfig,
+    total_items: int,
+):  # (ScrollbarState, ScrollbarConfig, ScrollbarIds)
+    "Map card stack types to scrollbar lib types."
+```
+
+``` python
+def render_card_stack_scrollbar(
+    state: CardStackState,       # Card stack state
+    config: CardStackConfig,     # Card stack config
+    total_items: int,            # Total item count
+    oob: bool = False,           # Whether to include hx-swap-oob
+) -> Any:  # Scrollbar element (or hidden div if not needed)
+    "Render the virtual scrollbar for a card stack instance."
 ```
 
 ``` python

@@ -12,7 +12,9 @@ from typing import Any, Callable, List, Optional, Tuple
 from ..core.config import CardStackConfig
 from ..core.html_ids import CardStackHtmlIds
 from ..core.models import CardStackState, CardStackUrls
-from ..components.viewport import render_all_slots_oob, render_viewport
+from cjm_fasthtml_card_stack.components.viewport import (
+    render_all_slots_oob, render_viewport, render_card_stack_scrollbar,
+)
 from ..components.progress import render_progress_indicator
 from ..helpers.focus import render_focus_oob
 
@@ -45,8 +47,8 @@ def build_nav_response(
     render_card: Callable,  # Card renderer callback
     progress_label: str = "Item",  # Label for progress indicator
     form_input_name: str = "focused_index",  # Name for the focused index hidden input
-) -> Tuple:  # OOB elements (slots + progress + focus)
-    """Build full OOB response for navigation: slots + progress + focus inputs."""
+) -> Tuple:  # OOB elements (slots + progress + focus + scrollbar)
+    """Build full OOB response for navigation: slots + progress + focus inputs + scrollbar."""
     slots_oob = build_slots_response(
         card_items=card_items, state=state, config=config,
         ids=ids, urls=urls, render_card=render_card,
@@ -56,7 +58,17 @@ def build_nav_response(
         label=progress_label, oob=True,
     )
     focus_oob = render_focus_oob(state.focused_index, ids, form_input_name=form_input_name)
-    return (*slots_oob, progress_oob, *focus_oob)
+
+    result = (*slots_oob, progress_oob, *focus_oob)
+
+    # Scrollbar OOB keeps track data-attributes in sync
+    if config.show_scrollbar:
+        scrollbar_oob = render_card_stack_scrollbar(
+            state, config, len(card_items), oob=True,
+        )
+        result = result + (scrollbar_oob,)
+
+    return result
 
 # %% ../../nbs/routes/handlers.ipynb #h1000008
 def card_stack_navigate(
@@ -133,11 +145,11 @@ def card_stack_update_viewport(
     urls: CardStackUrls,  # URL bundle for navigation
     render_card: Callable,  # Card renderer callback
     is_auto: bool = True,  # Whether this update came from auto-adjust mode
-) -> Tuple:  # OOB section elements (3 viewport sections)
+) -> Tuple:  # OOB section elements (3 viewport sections + scrollbar)
     """Update viewport with new card count via OOB section swaps. Mutates state in place."""
     state.visible_count = visible_count
     state.is_auto_mode = is_auto
-    return tuple(build_slots_response(
+    result = tuple(build_slots_response(
         card_items=card_items,
         state=state,
         config=config,
@@ -145,6 +157,15 @@ def card_stack_update_viewport(
         urls=urls,
         render_card=render_card,
     ))
+
+    # Scrollbar OOB — visible_count change affects thumb height
+    if config.show_scrollbar:
+        scrollbar_oob = render_card_stack_scrollbar(
+            state, config, len(card_items), oob=True,
+        )
+        result = result + (scrollbar_oob,)
+
+    return result
 
 # %% ../../nbs/routes/handlers.ipynb #h1000013
 def card_stack_save_width(

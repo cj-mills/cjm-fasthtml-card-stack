@@ -88,5 +88,8 @@ class CardStackConfig:
     click_to_focus: bool = False  # Whether context cards get transparent click overlay
     disable_scroll_in_modes: Tuple[str, ...] = ()  # Mode names where scroll-to-nav is suppressed
 
+    # Scrollbar
+    show_scrollbar: bool = True  # Show virtual scrollbar for mouse-driven scrubbing
+
     # Visual styling
     style: CardStackStyleConfig = field(default_factory=CardStackStyleConfig)  # Visual styling config

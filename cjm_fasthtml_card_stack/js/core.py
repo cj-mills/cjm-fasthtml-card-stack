@@ -28,6 +28,9 @@ from cjm_fasthtml_card_stack.js.controls import (
 )
 from .auto_adjust import _generate_auto_adjust_js
 
+from cjm_fasthtml_virtual_scrollbar.core.models import ScrollbarIds
+from cjm_fasthtml_virtual_scrollbar.js.scrollbar import generate_scrollbar_js as _sb_generate_scrollbar_js
+
 # %% ../../nbs/js/core.ipynb #jc000009
 def _generate_coordinator_js(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
@@ -191,6 +194,17 @@ def generate_card_stack_js(
     global_cbs_js = _generate_global_callbacks_js(config)
     coordinator_js = _generate_coordinator_js(ids, config, focus_position)
 
+    # Scrollbar JS (separate IIFE, runs after the main card stack IIFE)
+    scrollbar_js = ""
+    if config.show_scrollbar:
+        sb_ids = ScrollbarIds(prefix=prefix)
+        scrollbar_js = _sb_generate_scrollbar_js(
+            ids=sb_ids,
+            position_input_id=ids.focused_index_input,
+            nav_url=urls.nav_to_index,
+            nav_param="target_index",
+        )
+
     return Script(f"""(function() {{
         window.cardStacks = window.cardStacks || {{}};
         const ns = window.cardStacks['{prefix}'] = {{}};
@@ -206,4 +220,5 @@ def generate_card_stack_js(
         {global_cbs_js}
         {coordinator_js}
         {extra_js}
-    }})();""")
+    }})();
+    {scrollbar_js}""")
