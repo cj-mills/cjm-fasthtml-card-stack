@@ -36,7 +36,7 @@ def render_progress_indicator(
             f"{label} {current:,} of {total_items:,}",
             cls=combine_classes(
                 font_size.sm, font_family.mono,
-                text_dui.base_content.opacity(70)
+                text_dui.base_content
             )
         ),
         id=ids.progress,
