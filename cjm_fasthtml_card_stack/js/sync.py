@@ -12,29 +12,30 @@ from typing import Optional
 def generate_card_stack_sync_js(
     source_input_id:str,  # ID of source stack's focused_index hidden input
     target_nav_url:str,  # URL for target stack's nav_to_index route
-    target_total:int,  # Total items in target stack (for bounds check)
     toggle_fn_name:str="toggleSyncedNav",  # Name for window toggle function
     sync_key:str="_cardStackSync",  # Window key for state + cleanup
-    target_include_id:str="",  # ID of target stack's focused_index input to include
 ) -> str:  # Standalone JS snippet (not inside any IIFE)
     """Generate JS for synced navigation between two card stacks.
     
     Source stack navigation drives target stack to the same focused index.
     Toggle on/off via window[toggle_fn_name]() or toolbar button.
+    
+    The settle handler and source input lookup are deferred — they work
+    even if the source stack hasn't initialized when this JS first runs.
+    Out-of-range indices are clamped server-side by nav_to_index.
     """
     return f"""
     (function() {{
-        // Clean up previous sync observer if re-rendered
-        if (window.{sync_key} && window.{sync_key}.observer) {{
-            window.{sync_key}.observer.disconnect();
+        // Clean up previous settle handler if re-rendered
+        var settleKey = '{sync_key}_settle';
+        if (window[settleKey]) {{
+            document.body.removeEventListener('htmx:afterSettle', window[settleKey]);
         }}
 
         // Sync state
         var state = window.{sync_key} = {{
             enabled: false,
             targetUrl: '{target_nav_url}',
-            maxIndex: {max(0, target_total - 1)},
-            observer: null,
             lastSyncedIndex: -1,
         }};
 
@@ -48,7 +49,7 @@ def generate_card_stack_sync_js(
         function syncTarget(sourceIndex) {{
             if (!state.enabled) return;
             var idx = parseInt(sourceIndex, 10);
-            if (isNaN(idx) || idx < 0 || idx > state.maxIndex) return;
+            if (isNaN(idx) || idx < 0) return;
             if (idx === state.lastSyncedIndex) return;
             state.lastSyncedIndex = idx;
             htmx.ajax('POST', state.targetUrl, {{
@@ -57,22 +58,14 @@ def generate_card_stack_sync_js(
             }});
         }}
 
-        // Monitor source input for value changes via MutationObserver
-        // The hidden input's value is updated by OOB swaps after navigation
-        var sourceInput = document.getElementById('{source_input_id}');
-        if (sourceInput) {{
-            // Use afterSettle to detect when source stack navigation completes
-            var settleKey = '{sync_key}_settle';
-            if (window[settleKey]) {{
-                document.body.removeEventListener('htmx:afterSettle', window[settleKey]);
-            }}
-            var settleHandler = function(evt) {{
-                if (!state.enabled) return;
-                var input = document.getElementById('{source_input_id}');
-                if (input) syncTarget(input.value);
-            }};
-            window[settleKey] = settleHandler;
-            document.body.addEventListener('htmx:afterSettle', settleHandler);
-        }}
+        // Settle handler — reads source input by ID on each event
+        // (deferred lookup works even if source stack initializes after this JS runs)
+        var settleHandler = function(evt) {{
+            if (!state.enabled) return;
+            var input = document.getElementById('{source_input_id}');
+            if (input) syncTarget(input.value);
+        }};
+        window[settleKey] = settleHandler;
+        document.body.addEventListener('htmx:afterSettle', settleHandler);
     }})();
     """

@@ -304,7 +304,6 @@ def setup(route_prefix="/dual"):
         sync_js = Script(generate_card_stack_sync_js(
             source_input_id=text_ids.focused_index_input,
             target_nav_url=audio_urls.nav_to_index,
-            target_total=len(audio_items),
             toggle_fn_name=SYNC_TOGGLE_FN,
             sync_key=SYNC_KEY,
         ))

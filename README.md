@@ -72,55 +72,55 @@ graph LR
     components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> helpers_focus
+    components_viewport --> components_states
+    components_viewport --> core_models
     components_viewport --> core_config
     components_viewport --> core_constants
-    components_viewport --> components_states
     components_viewport --> core_html_ids
-    components_viewport --> core_models
+    components_viewport --> helpers_focus
     helpers_focus --> core_html_ids
     js_auto_adjust --> core_html_ids
-    js_auto_adjust --> core_models
     js_auto_adjust --> core_constants
     js_auto_adjust --> core_config
-    js_controls --> core_constants
+    js_auto_adjust --> core_models
     js_controls --> core_html_ids
-    js_controls --> core_models
+    js_controls --> core_constants
     js_controls --> core_config
-    js_core --> core_constants
-    js_core --> js_controls
+    js_controls --> core_models
     js_core --> js_scroll
-    js_core --> core_button_ids
-    js_core --> core_config
+    js_core --> core_constants
     js_core --> js_navigation
+    js_core --> core_config
+    js_core --> js_auto_adjust
+    js_core --> js_controls
     js_core --> core_html_ids
-    js_core --> core_models
     js_core --> js_touch
     js_core --> js_viewport
-    js_core --> js_auto_adjust
+    js_core --> core_models
+    js_core --> core_button_ids
     js_navigation --> core_button_ids
-    js_scroll --> core_button_ids
-    js_scroll --> core_constants
     js_scroll --> core_html_ids
-    js_touch --> core_button_ids
-    js_touch --> core_constants
+    js_scroll --> core_constants
+    js_scroll --> core_button_ids
     js_touch --> core_html_ids
+    js_touch --> core_constants
+    js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> js_core
-    keyboard_actions --> core_button_ids
     keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
+    keyboard_actions --> js_core
+    keyboard_actions --> core_button_ids
     keyboard_actions --> core_models
+    routes_handlers --> components_viewport
+    routes_handlers --> core_models
     routes_handlers --> helpers_focus
     routes_handlers --> core_config
     routes_handlers --> core_html_ids
-    routes_handlers --> core_models
-    routes_handlers --> components_viewport
     routes_handlers --> components_progress
     routes_router --> routes_handlers
+    routes_router --> core_models
     routes_router --> core_config
     routes_router --> core_html_ids
-    routes_router --> core_models
 ```
 
 *53 cross-module dependencies detected*
@@ -1115,11 +1115,20 @@ from cjm_fasthtml_card_stack.js.sync import (
 
 ``` python
 def generate_card_stack_sync_js(
+    source_input_id:str,  # ID of source stack's focused_index hidden input
+    target_nav_url:str,  # URL for target stack's nav_to_index route
+    toggle_fn_name:str="toggleSyncedNav",  # Name for window toggle function
+    sync_key:str="_cardStackSync",  # Window key for state + cleanup
+) -> str:  # Standalone JS snippet (not inside any IIFE)
     """
     Generate JS for synced navigation between two card stacks.
     
     Source stack navigation drives target stack to the same focused index.
     Toggle on/off via window[toggle_fn_name]() or toolbar button.
+    
+    The settle handler and source input lookup are deferred — they work
+    even if the source stack hasn't initialized when this JS first runs.
+    Out-of-range indices are clamped server-side by nav_to_index.
     """
 ```
 
