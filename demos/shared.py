@@ -1,13 +1,13 @@
 """Shared utilities for card stack demos."""
 
-from fasthtml.common import Div, H1, P, Span
+from fasthtml.common import Div, H1, P
 
 from cjm_fasthtml_daisyui.utilities.semantic_colors import bg_dui, text_dui
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.utilities.sizing import container, max_w
 from cjm_fasthtml_tailwind.utilities.typography import font_size, font_weight
 from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
-    flex_display, flex_direction, flex_wrap, items, justify, gap, grow
+    flex_display, items, justify, gap,
 )
 from cjm_fasthtml_tailwind.utilities.borders import rounded
 from cjm_fasthtml_tailwind.core.base import combine_classes
@@ -18,9 +18,7 @@ from cjm_fasthtml_keyboard_navigation.components.system import render_keyboard_s
 from cjm_fasthtml_card_stack.core.config import CardStackConfig
 from cjm_fasthtml_card_stack.core.html_ids import CardStackHtmlIds
 from cjm_fasthtml_card_stack.components.viewport import render_viewport
-from cjm_fasthtml_card_stack.components.controls import (
-    render_width_slider, render_scale_slider, render_card_count_select
-)
+from cjm_fasthtml_card_stack.components.settings_modal import render_card_stack_settings_modal
 from cjm_fasthtml_card_stack.components.progress import render_progress_indicator
 from cjm_fasthtml_card_stack.js.core import generate_card_stack_js
 from cjm_fasthtml_card_stack.keyboard.actions import (
@@ -127,40 +125,34 @@ def render_demo_page(
             extra_scripts=extra_scripts,
         )
 
+        # Settings modal (scale enabled in demos)
+        settings_modal, settings_trigger = render_card_stack_settings_modal(
+            config, ids,
+            current_count=state.visible_count,
+            is_auto_mode=state.is_auto_mode,
+            card_width=state.card_width,
+            show_scale=True,
+            card_scale=state.card_scale,
+        )
+
         return Div(
             # Visual content container (used for viewport height calculation)
             Div(
-                # Header
+                # Header with settings trigger
                 Div(
                     H1(title, cls=combine_classes(font_size._2xl, font_weight.bold)),
                     P(description,
-                      cls=combine_classes(text_dui.base_content, font_size.sm, m.b(4))),
+                      cls=combine_classes(text_dui.base_content, font_size.sm)),
+                    # Toolbar
+                    Div(
+                        settings_trigger,
+                        cls=combine_classes(
+                            flex_display, items.center, gap(2),
+                            m.b(2), p(1),
+                            bg_dui.base_200, rounded.lg,
+                        )
+                    ),
                     cls=m.b(2)
-                ),
-
-                # Controls row
-                Div(
-                    Div(
-                        render_card_count_select(config, ids, state.visible_count),
-                        cls=combine_classes(flex_display, items.center, gap(2)),
-                    ),
-                    Div(
-                        Span("Width:", cls=combine_classes(font_size.sm, text_dui.base_content)),
-                        render_width_slider(config, ids, state.card_width),
-                        cls=combine_classes(flex_display, items.center, gap(2), grow()),
-                    ),
-                    Div(
-                        Span("Scale:", cls=combine_classes(font_size.sm, text_dui.base_content)),
-                        render_scale_slider(config, ids, state.card_scale),
-                        cls=combine_classes(flex_display, items.center, gap(2), grow()),
-                    ),
-                    cls=combine_classes(
-                        flex_display, flex_direction.col, flex_direction.row.sm,
-                        flex_wrap.wrap, items.stretch, items.center.sm,
-                        justify.between, gap.x(4), gap.y(2),
-                        m.b(2), p(2),
-                        bg_dui.base_200, rounded.lg,
-                    )
                 ),
 
                 # Viewport
@@ -194,6 +186,9 @@ def render_demo_page(
 
             # Card stack JS
             js_script,
+
+            # Settings modal dialog
+            settings_modal,
 
             cls=combine_classes(container, max_w._6xl, m.x.auto, p(4))
         )

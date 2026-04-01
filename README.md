@@ -12,11 +12,12 @@ pip install cjm_fasthtml_card_stack
 ## Project Structure
 
     nbs/
-    ├── components/ (4)
-    │   ├── controls.ipynb  # Width slider, scale slider, and card count selector components.
-    │   ├── progress.ipynb  # Progress indicator showing the current position within the card stack.
-    │   ├── states.ipynb    # Loading, empty, and placeholder card components for the card stack viewport.
-    │   └── viewport.ipynb  # Card stack viewport with 3-section CSS Grid layout, slot rendering,
+    ├── components/ (5)
+    │   ├── controls.ipynb        # Width slider, scale slider, and card count selector components.
+    │   ├── progress.ipynb        # Progress indicator showing the current position within the card stack.
+    │   ├── settings_modal.ipynb  # Modal-based card stack settings with card count slider (auto toggle), width slider, and optional scale slider.
+    │   ├── states.ipynb          # Loading, empty, and placeholder card components for the card stack viewport.
+    │   └── viewport.ipynb        # Card stack viewport with 3-section CSS Grid layout, slot rendering,
     ├── core/ (5)
     │   ├── button_ids.ipynb  # Prefix-based IDs for hidden keyboard action buttons.
     │   ├── config.ipynb      # Configuration dataclasses for card stack initialization and visual styling.
@@ -40,7 +41,7 @@ pip install cjm_fasthtml_card_stack
         ├── handlers.ipynb  # Response builder functions for card stack operations (Tier 1 API).
         └── router.ipynb    # Convenience router factory that wires up standard card stack routes (Tier 2 API).
 
-Total: 21 notebooks across 6 directories
+Total: 22 notebooks across 6 directories
 
 ## Module Dependencies
 
@@ -48,6 +49,7 @@ Total: 21 notebooks across 6 directories
 graph LR
     components_controls[components.controls<br/>Controls]
     components_progress[components.progress<br/>Progress]
+    components_settings_modal[components.settings_modal<br/>Settings Modal]
     components_states[components.states<br/>States]
     components_viewport[components.viewport<br/>Viewport]
     core_button_ids[core.button_ids<br/>Button IDs]
@@ -71,59 +73,61 @@ graph LR
     components_controls --> core_config
     components_controls --> core_html_ids
     components_progress --> core_html_ids
+    components_settings_modal --> core_config
+    components_settings_modal --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> components_states
-    components_viewport --> core_constants
+    components_viewport --> helpers_focus
     components_viewport --> core_config
     components_viewport --> core_models
+    components_viewport --> components_states
+    components_viewport --> core_constants
     components_viewport --> core_html_ids
-    components_viewport --> helpers_focus
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_models
     js_auto_adjust --> core_config
-    js_auto_adjust --> core_constants
+    js_auto_adjust --> core_models
     js_auto_adjust --> core_html_ids
+    js_auto_adjust --> core_constants
     js_controls --> core_constants
-    js_controls --> core_models
     js_controls --> core_config
+    js_controls --> core_models
     js_controls --> core_html_ids
-    js_core --> js_viewport
     js_core --> core_constants
-    js_core --> core_config
     js_core --> js_controls
-    js_core --> js_scroll
-    js_core --> core_button_ids
     js_core --> js_auto_adjust
+    js_core --> core_config
     js_core --> core_models
-    js_core --> core_html_ids
-    js_core --> js_navigation
     js_core --> js_touch
+    js_core --> js_navigation
+    js_core --> js_scroll
+    js_core --> js_viewport
+    js_core --> core_button_ids
+    js_core --> core_html_ids
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_html_ids
     js_scroll --> core_button_ids
+    js_scroll --> core_html_ids
     js_touch --> core_constants
-    js_touch --> core_html_ids
     js_touch --> core_button_ids
+    js_touch --> core_html_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> js_core
     keyboard_actions --> core_config
-    keyboard_actions --> core_button_ids
     keyboard_actions --> core_models
+    keyboard_actions --> js_core
+    keyboard_actions --> core_button_ids
     keyboard_actions --> core_html_ids
     routes_handlers --> components_viewport
     routes_handlers --> core_config
-    routes_handlers --> helpers_focus
     routes_handlers --> core_models
     routes_handlers --> core_html_ids
     routes_handlers --> components_progress
+    routes_handlers --> helpers_focus
+    routes_router --> routes_handlers
     routes_router --> core_config
     routes_router --> core_models
-    routes_router --> routes_handlers
     routes_router --> core_html_ids
 ```
 
-*53 cross-module dependencies detected*
+*55 cross-module dependencies detected*
 
 ## CLI Reference
 
@@ -853,8 +857,24 @@ class CardStackHtmlIds:
             return f"{self.prefix}-card-count-select"
     
         @property
-        def width_slider(self) -> str:  # Width range slider
+        def card_count_slider(self) -> str:  # Card count range slider
         "Card count selector dropdown."
+    
+    def card_count_slider(self) -> str:  # Card count range slider
+            """Card count range slider."""
+            return f"{self.prefix}-card-count-slider"
+    
+        @property
+        def card_count_auto_toggle(self) -> str:  # Auto mode toggle
+        "Card count range slider."
+    
+    def card_count_auto_toggle(self) -> str:  # Auto mode toggle
+            """Card count auto mode toggle."""
+            return f"{self.prefix}-card-count-auto-toggle"
+    
+        @property
+        def width_slider(self) -> str:  # Width range slider
+        "Card count auto mode toggle."
     
     def width_slider(self) -> str:  # Width range slider
             """Card stack width slider."""
@@ -868,11 +888,19 @@ class CardStackHtmlIds:
             """Card stack scale slider."""
             return f"{self.prefix}-scale-slider"
     
+        @property
+        def settings_modal(self) -> str:  # Settings modal dialog
+        "Card stack scale slider."
+    
+    def settings_modal(self) -> str:  # Settings modal dialog
+            """Card stack settings modal."""
+            return f"{self.prefix}-settings-modal"
+    
         # --- Status elements ---
     
         @property
         def progress(self) -> str:  # Progress indicator
-        "Card stack scale slider."
+        "Card stack settings modal."
     
     def progress(self) -> str:  # Progress indicator
             """Progress indicator element."""
@@ -1055,6 +1083,82 @@ def generate_scroll_nav_js(
     zone_id: str = "",  # Keyboard zone ID to activate on scroll interaction
 ) -> str:  # JavaScript code fragment for scroll navigation
     "Generate JS for scroll wheel to navigation conversion."
+```
+
+### Settings Modal (`settings_modal.ipynb`)
+
+> Modal-based card stack settings with card count slider (auto toggle),
+> width slider, and optional scale slider.
+
+#### Import
+
+``` python
+from cjm_fasthtml_card_stack.components.settings_modal import (
+    render_settings_trigger,
+    render_card_stack_settings_modal
+)
+```
+
+#### Functions
+
+``` python
+def _render_section_label(
+    text: str,  # label text
+) -> Span:      # styled label element
+    "Render a settings section label."
+```
+
+``` python
+def _render_slider_with_labels(
+    slider_id: str,   # HTML ID for the range input
+    min_val: int,      # slider minimum
+    max_val: int,      # slider maximum
+    step_val: int,     # slider step
+    current_val: int,  # current value
+    low_label: str,    # label for low end
+    high_label: str,   # label for high end
+    oninput: str,      # JS oninput handler
+    disabled: bool = False,  # whether slider is disabled
+) -> Div:              # slider row with end labels
+    "Render a range slider with low/high labels."
+```
+
+``` python
+def _render_card_count_section(
+    config: CardStackConfig,   # card stack config with visible_count_options
+    ids: CardStackHtmlIds,     # HTML IDs for this instance
+    current_count: int = 1,    # currently selected card count
+    is_auto_mode: bool = True, # whether auto-adjust mode is active
+) -> Div:                      # card count section with auto toggle and slider
+    "Render the card count section with auto toggle and discrete slider."
+```
+
+``` python
+def render_settings_trigger(
+    modal_id: str,          # ID of the settings modal dialog to open
+    icon_size: int = 4,     # lucide icon size
+) -> Button:                # ghost button with sliders-horizontal icon
+    "Render a settings icon button that opens the card stack settings modal."
+```
+
+``` python
+def render_card_stack_settings_modal(
+    config: CardStackConfig,       # card stack configuration
+    ids: CardStackHtmlIds,         # HTML IDs for this instance
+    current_count: int = 1,        # currently selected card count
+    is_auto_mode: bool = True,     # whether auto-adjust mode is active
+    card_width: int = 80,          # current card width in rem
+    show_scale: bool = False,      # whether to include the scale slider
+    card_scale: int = 100,         # current scale percentage (if show_scale=True)
+    title: str = "Display Settings",  # modal title text
+) -> tuple[FT, FT]:               # (modal_dialog, trigger_button)
+    """
+    Render a modal-based card stack settings panel.
+    
+    Returns two components:
+    - `modal_dialog`: The Dialog element (place anywhere in page)
+    - `trigger_button`: Small settings icon button (place in toolbar)
+    """
 ```
 
 ### States (`states.ipynb`)

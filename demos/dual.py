@@ -34,9 +34,7 @@ from cjm_fasthtml_card_stack.core.html_ids import CardStackHtmlIds
 from cjm_fasthtml_card_stack.core.button_ids import CardStackButtonIds
 from cjm_fasthtml_card_stack.routes.router import init_card_stack_router
 from cjm_fasthtml_card_stack.components.viewport import render_viewport
-from cjm_fasthtml_card_stack.components.controls import (
-    render_width_slider, render_scale_slider, render_card_count_select
-)
+from cjm_fasthtml_card_stack.components.settings_modal import render_card_stack_settings_modal
 from cjm_fasthtml_card_stack.components.progress import render_progress_indicator
 from cjm_fasthtml_card_stack.js.core import generate_card_stack_js
 from cjm_fasthtml_card_stack.js.sync import generate_card_stack_sync_js
@@ -354,6 +352,24 @@ def setup(route_prefix="/dual"):
             }})();
         """)
 
+        # Settings modals (scale enabled in demos)
+        text_settings_modal, text_settings_trigger = render_card_stack_settings_modal(
+            text_config, text_ids,
+            current_count=t_state.visible_count,
+            is_auto_mode=t_state.is_auto_mode,
+            card_width=t_state.card_width,
+            show_scale=True,
+            card_scale=t_state.card_scale,
+        )
+        audio_settings_modal, audio_settings_trigger = render_card_stack_settings_modal(
+            audio_config, audio_ids,
+            current_count=a_state.visible_count,
+            is_auto_mode=a_state.is_auto_mode,
+            card_width=a_state.card_width,
+            show_scale=True,
+            card_scale=a_state.card_scale,
+        )
+
         return Div(
             # Header
             Div(
@@ -394,22 +410,12 @@ def setup(route_prefix="/dual"):
                         )
                     ),
 
-                    # Controls
+                    # Toolbar
                     Div(
-                        render_card_count_select(text_config, text_ids, t_state.visible_count),
-                        Div(
-                            Span("W:", cls=combine_classes(font_size.xs, text_dui.base_content)),
-                            render_width_slider(text_config, text_ids, t_state.card_width),
-                            cls=combine_classes(flex_display, items.center, gap(1), grow()),
-                        ),
-                        Div(
-                            Span("S:", cls=combine_classes(font_size.xs, text_dui.base_content)),
-                            render_scale_slider(text_config, text_ids, t_state.card_scale),
-                            cls=combine_classes(flex_display, items.center, gap(1), grow()),
-                        ),
+                        text_settings_trigger,
                         cls=combine_classes(
-                            flex_display, items.center, gap(2), m.b(2), p(2),
-                            bg_dui.base_200, rounded.lg, font_size.sm
+                            flex_display, items.center, gap(2), m.b(2), p(1),
+                            bg_dui.base_200, rounded.lg,
                         )
                     ),
 
@@ -451,22 +457,12 @@ def setup(route_prefix="/dual"):
                         )
                     ),
 
-                    # Controls
+                    # Toolbar
                     Div(
-                        render_card_count_select(audio_config, audio_ids, a_state.visible_count),
-                        Div(
-                            Span("W:", cls=combine_classes(font_size.xs, text_dui.base_content)),
-                            render_width_slider(audio_config, audio_ids, a_state.card_width),
-                            cls=combine_classes(flex_display, items.center, gap(1), grow()),
-                        ),
-                        Div(
-                            Span("S:", cls=combine_classes(font_size.xs, text_dui.base_content)),
-                            render_scale_slider(audio_config, audio_ids, a_state.card_scale),
-                            cls=combine_classes(flex_display, items.center, gap(1), grow()),
-                        ),
+                        audio_settings_trigger,
                         cls=combine_classes(
-                            flex_display, items.center, gap(2), m.b(2), p(2),
-                            bg_dui.base_200, rounded.lg, font_size.sm
+                            flex_display, items.center, gap(2), m.b(2), p(1),
+                            bg_dui.base_200, rounded.lg,
                         )
                     ),
 
@@ -519,6 +515,10 @@ def setup(route_prefix="/dual"):
 
             # Synced navigation JS
             sync_js,
+
+            # Settings modals
+            text_settings_modal,
+            audio_settings_modal,
 
             cls=combine_classes(container, max_w._7xl, m.x.auto, p(4))
         )

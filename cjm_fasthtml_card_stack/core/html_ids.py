@@ -65,6 +65,16 @@ class CardStackHtmlIds:
         return f"{self.prefix}-card-count-select"
 
     @property
+    def card_count_slider(self) -> str:  # Card count range slider
+        """Card count range slider."""
+        return f"{self.prefix}-card-count-slider"
+
+    @property
+    def card_count_auto_toggle(self) -> str:  # Auto mode toggle
+        """Card count auto mode toggle."""
+        return f"{self.prefix}-card-count-auto-toggle"
+
+    @property
     def width_slider(self) -> str:  # Width range slider
         """Card stack width slider."""
         return f"{self.prefix}-width-slider"
@@ -73,6 +83,11 @@ class CardStackHtmlIds:
     def scale_slider(self) -> str:  # Scale range slider
         """Card stack scale slider."""
         return f"{self.prefix}-scale-slider"
+
+    @property
+    def settings_modal(self) -> str:  # Settings modal dialog
+        """Card stack settings modal."""
+        return f"{self.prefix}-settings-modal"
 
     # --- Status elements ---
 
