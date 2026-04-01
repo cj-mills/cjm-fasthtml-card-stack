@@ -25,12 +25,13 @@ pip install cjm_fasthtml_card_stack
     │   └── models.ipynb      # Core dataclasses for card stack state, render context, and URL routing.
     ├── helpers/ (1)
     │   └── focus.ipynb  # Focus position resolution, viewport window calculation, and OOB focus sync.
-    ├── js/ (7)
+    ├── js/ (8)
     │   ├── auto_adjust.ipynb  # JavaScript generator for automatic visible card count adjustment.
     │   ├── controls.ipynb     # JavaScript generators for width, scale, and card count management.
     │   ├── core.ipynb         # Master composer for card stack JavaScript. Combines viewport height,
     │   ├── navigation.ipynb   # JavaScript generator for page jump and first/last navigation helpers.
     │   ├── scroll.ipynb       # JavaScript generator for scroll-to-nav conversion.
+    │   ├── sync.ipynb         # Synced navigation between two card stacks — source stack navigation drives target stack to same index
     │   ├── touch.ipynb        # JavaScript generator for touch-to-nav conversion: swipe, drag,
     │   └── viewport.ipynb     # JavaScript generator for dynamic viewport height calculation.
     ├── keyboard/ (1)
@@ -39,7 +40,7 @@ pip install cjm_fasthtml_card_stack
         ├── handlers.ipynb  # Response builder functions for card stack operations (Tier 1 API).
         └── router.ipynb    # Convenience router factory that wires up standard card stack routes (Tier 2 API).
 
-Total: 20 notebooks across 6 directories
+Total: 21 notebooks across 6 directories
 
 ## Module Dependencies
 
@@ -60,65 +61,66 @@ graph LR
     js_core[js.core<br/>JS: Core]
     js_navigation[js.navigation<br/>JS: Page Navigation]
     js_scroll[js.scroll<br/>JS: Scroll Navigation]
+    js_sync[js.sync<br/>sync]
     js_touch[js.touch<br/>JS: Touch Navigation]
     js_viewport[js.viewport<br/>JS: Viewport Height]
     keyboard_actions[keyboard.actions<br/>Actions]
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_html_ids
     components_controls --> core_config
+    components_controls --> core_html_ids
     components_progress --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_constants
     components_viewport --> helpers_focus
-    components_viewport --> core_html_ids
-    components_viewport --> components_states
-    components_viewport --> core_models
     components_viewport --> core_config
+    components_viewport --> core_constants
+    components_viewport --> components_states
+    components_viewport --> core_html_ids
+    components_viewport --> core_models
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_models
     js_auto_adjust --> core_html_ids
-    js_auto_adjust --> core_config
+    js_auto_adjust --> core_models
     js_auto_adjust --> core_constants
+    js_auto_adjust --> core_config
     js_controls --> core_constants
-    js_controls --> core_models
     js_controls --> core_html_ids
+    js_controls --> core_models
     js_controls --> core_config
     js_core --> core_constants
     js_core --> js_controls
-    js_core --> js_navigation
     js_core --> js_scroll
-    js_core --> js_viewport
-    js_core --> core_html_ids
-    js_core --> js_auto_adjust
-    js_core --> js_touch
     js_core --> core_button_ids
-    js_core --> core_models
     js_core --> core_config
+    js_core --> js_navigation
+    js_core --> core_html_ids
+    js_core --> core_models
+    js_core --> js_touch
+    js_core --> js_viewport
+    js_core --> js_auto_adjust
     js_navigation --> core_button_ids
-    js_scroll --> core_constants
     js_scroll --> core_button_ids
+    js_scroll --> core_constants
     js_scroll --> core_html_ids
-    js_touch --> core_constants
     js_touch --> core_button_ids
+    js_touch --> core_constants
     js_touch --> core_html_ids
     js_viewport --> core_html_ids
     keyboard_actions --> js_core
-    keyboard_actions --> core_html_ids
     keyboard_actions --> core_button_ids
     keyboard_actions --> core_config
+    keyboard_actions --> core_html_ids
     keyboard_actions --> core_models
-    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
+    routes_handlers --> core_config
     routes_handlers --> core_html_ids
     routes_handlers --> core_models
-    routes_handlers --> core_config
+    routes_handlers --> components_viewport
     routes_handlers --> components_progress
     routes_router --> routes_handlers
+    routes_router --> core_config
     routes_router --> core_html_ids
     routes_router --> core_models
-    routes_router --> core_config
 ```
 
 *53 cross-module dependencies detected*
@@ -1094,6 +1096,31 @@ def render_empty_state(
     subtitle: str = "",  # Optional subtitle text
 ) -> Any:  # Empty state component
     "Render empty state when no items exist."
+```
+
+### sync (`sync.ipynb`)
+
+> Synced navigation between two card stacks — source stack navigation
+> drives target stack to same index
+
+#### Import
+
+``` python
+from cjm_fasthtml_card_stack.js.sync import (
+    generate_card_stack_sync_js
+)
+```
+
+#### Functions
+
+``` python
+def generate_card_stack_sync_js(
+    """
+    Generate JS for synced navigation between two card stacks.
+    
+    Source stack navigation drives target stack to the same focused index.
+    Toggle on/off via window[toggle_fn_name]() or toolbar button.
+    """
 ```
 
 ### JS: Touch Navigation (`touch.ipynb`)

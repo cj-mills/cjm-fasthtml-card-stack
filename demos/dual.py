@@ -8,10 +8,11 @@ Each stack has its own state, router, and viewport height calculation.
 Keyboard navigation switches between stacks with Left/Right arrow keys.
 """
 
-from fasthtml.common import Div, H1, H2, P, Span, Script
+from fasthtml.common import Button, Div, H1, H2, P, Span, Script
 
 from cjm_fasthtml_daisyui.components.data_display.card import card, card_body
 from cjm_fasthtml_daisyui.components.data_display.badge import badge, badge_colors
+from cjm_fasthtml_daisyui.components.actions.button import btn, btn_sizes, btn_colors, btn_styles
 from cjm_fasthtml_daisyui.utilities.semantic_colors import bg_dui, text_dui
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.utilities.sizing import container, max_w, w
@@ -24,6 +25,7 @@ from cjm_fasthtml_tailwind.utilities.effects import opacity
 from cjm_fasthtml_tailwind.core.base import combine_classes
 
 from cjm_fasthtml_keyboard_navigation.core.manager import ZoneManager
+from cjm_fasthtml_keyboard_navigation.core.actions import KeyAction
 from cjm_fasthtml_keyboard_navigation.components.system import render_keyboard_system
 
 from cjm_fasthtml_card_stack.core.config import CardStackConfig
@@ -37,6 +39,7 @@ from cjm_fasthtml_card_stack.components.controls import (
 )
 from cjm_fasthtml_card_stack.components.progress import render_progress_indicator
 from cjm_fasthtml_card_stack.js.core import generate_card_stack_js
+from cjm_fasthtml_card_stack.js.sync import generate_card_stack_sync_js
 from cjm_fasthtml_card_stack.keyboard.actions import (
     create_card_stack_focus_zone, create_card_stack_nav_actions,
     build_card_stack_url_map, render_card_stack_action_buttons
@@ -204,6 +207,11 @@ def setup(route_prefix="/dual"):
     text_container_id = "dual-text-column"
     audio_container_id = "dual-audio-column"
 
+    # --- Sync configuration ---
+    SYNC_TOGGLE_FN = "toggleDualSync"
+    SYNC_KEY = "_dualSync"
+    SYNC_BTN_ID = "dual-sync-toggle-btn"
+
     # --- Keyboard navigation with two zones ---
     def build_dual_keyboard_system():
         """Build keyboard system with two zones and zone switching."""
@@ -217,9 +225,19 @@ def setup(route_prefix="/dual"):
             audio_zone.id, audio_btn_ids, audio_config
         )
 
+        # Synced navigation toggle — S key (active in text zone only)
+        # Uses a wrapper that also updates the toolbar button visual state
+        sync_action = KeyAction(
+            key="s",
+            js_callback="_dualSyncKeyToggle",
+            zone_ids=(text_zone.id,),
+            description="Toggle synced navigation",
+            hint_group="Sync",
+        )
+
         # Zone switching is built into ZoneManager via prev_zone_key/next_zone_key
         # (defaults to ArrowLeft/ArrowRight)
-        all_actions = text_nav_actions + audio_nav_actions
+        all_actions = text_nav_actions + audio_nav_actions + (sync_action,)
 
         manager = ZoneManager(
             zones=(text_zone, audio_zone),
@@ -282,6 +300,15 @@ def setup(route_prefix="/dual"):
             extra_scripts=(generate_scale_spacing_js(audio_config, audio_ids),),
         )
 
+        # Sync JS — text stack drives audio stack navigation
+        sync_js = Script(generate_card_stack_sync_js(
+            source_input_id=text_ids.focused_index_input,
+            target_nav_url=audio_urls.nav_to_index,
+            target_total=len(audio_items),
+            toggle_fn_name=SYNC_TOGGLE_FN,
+            sync_key=SYNC_KEY,
+        ))
+
         # Active zone visual styling via ZoneManager callback
         zone_style_js = Script(f"""
             (function() {{
@@ -314,17 +341,43 @@ def setup(route_prefix="/dual"):
 
                 // Initial update (text zone is active by default)
                 updateZoneStyles(textZoneId);
+
+                // Sync toggle wrapper for S key — toggles state and updates button
+                window._dualSyncKeyToggle = function() {{
+                    var on = window.{SYNC_TOGGLE_FN} && window.{SYNC_TOGGLE_FN}();
+                    var btn = document.getElementById('{SYNC_BTN_ID}');
+                    if (btn) {{
+                        btn.textContent = on ? 'Sync: On' : 'Sync: Off';
+                        btn.classList.toggle('btn-primary', on);
+                        btn.classList.toggle('btn-outline', !on);
+                    }}
+                }};
             }})();
         """)
 
         return Div(
             # Header
             Div(
-                H1("Dual Card Stack", cls=combine_classes(font_size._2xl, font_weight.bold)),
-                P("Two independent card stacks with Left/Right zone switching. "
-                  "Each stack has its own viewport, scroll navigation, and click-to-focus.",
-                  cls=combine_classes(text_dui.base_content, font_size.sm, m.b(4))),
-                cls=m.b(2)
+                Div(
+                    H1("Dual Card Stack", cls=combine_classes(font_size._2xl, font_weight.bold)),
+                    P("Two independent card stacks with Left/Right zone switching. "
+                      "Press S to toggle synced navigation (text drives audio).",
+                      cls=combine_classes(text_dui.base_content, font_size.sm)),
+                    cls=grow(),
+                ),
+                Button(
+                    "Sync: Off",
+                    id=SYNC_BTN_ID,
+                    type="button",
+                    cls=combine_classes(btn, btn_sizes.sm, btn_styles.outline),
+                    onclick=f"""
+                        var on = window.{SYNC_TOGGLE_FN} && window.{SYNC_TOGGLE_FN}();
+                        this.textContent = on ? 'Sync: On' : 'Sync: Off';
+                        this.classList.toggle('btn-primary', on);
+                        this.classList.toggle('btn-outline', !on);
+                    """,
+                ),
+                cls=combine_classes(flex_display, items.center, gap(4), m.b(2)),
             ),
 
             # Two-column layout
@@ -464,6 +517,9 @@ def setup(route_prefix="/dual"):
 
             # Zone style updater
             zone_style_js,
+
+            # Synced navigation JS
+            sync_js,
 
             cls=combine_classes(container, max_w._7xl, m.x.auto, p(4))
         )
