@@ -37,13 +37,25 @@ from .states import render_placeholder_card
 # %% ../../nbs/components/viewport.ipynb #v1000005
 def _render_mode_sync_script(
     active_mode: Optional[str] = None,  # Active keyboard mode name (None = navigation)
+    zone_id: str = "",  # Card stack zone ID (skip sync if another zone is active)
 ) -> Any:  # Script element that syncs keyboard mode state
-    """Generate script to sync keyboard navigation mode with rendered UI state."""
+    """Generate script to sync keyboard navigation mode with rendered UI state.
+    
+    When zone_id is provided, only syncs if this zone is the currently active zone.
+    This prevents a dual-stack OOB response from one stack exiting split mode
+    on the other stack's keyboard system.
+    """
     target_mode = active_mode if active_mode else "navigation"
+
+    zone_guard = ""
+    if zone_id:
+        zone_guard = f"""
+                const kbState = window.kbNav.getState();
+                if (kbState && kbState.activeZoneId !== '{zone_id}') return;"""
 
     return Script(f"""
         (function() {{
-            if (typeof window.kbNav !== 'undefined') {{
+            if (typeof window.kbNav !== 'undefined') {{{zone_guard}
                 const state = window.kbNav.getState();
                 const currentMode = state ? state.currentMode : 'navigation';
                 const targetMode = '{target_mode}';
@@ -121,7 +133,7 @@ def render_slot_card(
     ) if is_focused else ""
 
     # Mode sync script in focused slot OOB updates
-    mode_sync = _render_mode_sync_script(state.active_mode) if (oob and is_focused) else None
+    mode_sync = _render_mode_sync_script(state.active_mode, zone_id=ids.card_stack) if (oob and is_focused) else None
 
     # Click-to-focus overlay for context cards (not placeholders)
     click_overlay = None
@@ -146,6 +158,7 @@ def render_slot_card(
         tabindex="0" if is_focused else "-1",
         hx_swap_oob="innerHTML" if oob else None
     )
+
 
 # %% ../../nbs/components/viewport.ipynb #v1000021
 def render_all_slots_oob(
@@ -197,7 +210,7 @@ def render_all_slots_oob(
         hx_swap_oob="innerHTML"
     )
 
-    mode_sync = _render_mode_sync_script(state.active_mode)
+    mode_sync = _render_mode_sync_script(state.active_mode, zone_id=ids.card_stack)
     focused_section = Div(
         focused_card, mode_sync,
         id=ids.viewport_section_focused,
@@ -217,6 +230,7 @@ def render_all_slots_oob(
     )
 
     return [before_section, focused_section, after_section]
+
 
 # %% ../../nbs/components/viewport.ipynb #v1000031
 def _grid_template_rows(
@@ -371,7 +385,7 @@ def render_viewport(
             cls=inner_cls,
             style=inner_style
         ),
-        _render_mode_sync_script(state.active_mode),
+        _render_mode_sync_script(state.active_mode, zone_id=ids.card_stack),
         focused_input,
         id=ids.card_stack,
         cls=outer_cls,
@@ -392,3 +406,4 @@ def render_viewport(
         )
 
     return card_stack_el
+
