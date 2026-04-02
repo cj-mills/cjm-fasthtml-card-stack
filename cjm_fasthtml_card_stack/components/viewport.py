@@ -402,7 +402,7 @@ def render_viewport(
         scrollbar_el = render_card_stack_scrollbar(state, config, total_items)
         return Div(
             card_stack_el, scrollbar_el,
-            cls=combine_classes(flex_display, w.full, overflow.hidden),
+            cls=combine_classes(flex_display, w.full, overflow.hidden, p(1)),
         )
 
     return card_stack_el
