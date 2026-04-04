@@ -97,7 +97,12 @@ def render_slot_card(
     urls: CardStackUrls,  # URL bundle for navigation
     oob: bool = False,  # Whether to render as OOB swap
 ) -> Any:  # Slot content wrapper
-    """Render a single card for a viewport slot."""
+    """Render a single card for a viewport slot.
+
+    Focus emphasis styling (ring, shadow, border-radius) is applied on the
+    focused *section* div, not on the slot itself. This keeps the shadow
+    outside the section's overflow-y-auto clipping boundary.
+    """
     total_items = len(card_items)
     is_placeholder = item_index < 0 or item_index >= total_items
     slot_id = ids.viewport_slot(item_index)
@@ -125,13 +130,6 @@ def render_slot_card(
         )
         content = render_card(card_items[item_index], context)
 
-    # Focus styling from config
-    focus_cls = combine_classes(
-        config.style.focus_ring,
-        config.style.focus_shadow, 
-        config.style.focus_border_radius
-    ) if is_focused else ""
-
     # Mode sync script in focused slot OOB updates
     mode_sync = _render_mode_sync_script(state.active_mode, zone_id=ids.card_stack) if (oob and is_focused) else None
 
@@ -145,7 +143,6 @@ def render_slot_card(
         "viewport-slot",
         p(f'[var(--{prefix}-slot-padding)]') if not is_focused else "",
         w.full,
-        focus_cls,
         position.relative if click_overlay else ""
     )
 
@@ -158,7 +155,6 @@ def render_slot_card(
         tabindex="0" if is_focused else "-1",
         hx_swap_oob="innerHTML" if oob else None
     )
-
 
 # %% ../../nbs/components/viewport.ipynb #v1000021
 def render_all_slots_oob(
@@ -197,10 +193,12 @@ def render_all_slots_oob(
         else:
             after_cards.append(card_el)
 
-    # Section styling — gap via CSS custom property
+    # Section styling — gap via CSS custom property.
+    # touch.none on before/after sections for custom touch nav.
     section_cls = lambda alignment: combine_classes(
         flex_display, flex_direction.col, alignment, items.center,
-        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden
+        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden,
+        touch.none,
     )
 
     before_section = Div(
@@ -210,14 +208,23 @@ def render_all_slots_oob(
         hx_swap_oob="innerHTML"
     )
 
+    # Focus emphasis styling on the section (not the slot) so the shadow
+    # renders outside the overflow-y-auto clipping boundary.
+    focus_cls = combine_classes(
+        config.style.focus_ring,
+        config.style.focus_shadow,
+        config.style.focus_border_radius
+    )
+
+    # Focused section starts with touch.none; JS toggles to pan-y when
+    # card content overflows (see constrainFocusedSection in coordinator).
     mode_sync = _render_mode_sync_script(state.active_mode, zone_id=ids.card_stack)
     focused_section = Div(
         focused_card, mode_sync,
         id=ids.viewport_section_focused,
         cls=combine_classes(
-            flex_display, justify.center, items.center, w.full,
-            p.x(f'[var(--{prefix}-focus-padding-x)]'),
-            p.b(f'[var(--{prefix}-focus-padding-b)]')
+            flex_display, justify.center, items.start, w.full,
+            overflow.y.auto, touch.none, focus_cls,
         ),
         hx_swap_oob="innerHTML"
     )
@@ -230,7 +237,6 @@ def render_all_slots_oob(
     )
 
     return [before_section, focused_section, after_section]
-
 
 # %% ../../nbs/components/viewport.ipynb #v1000031
 def _grid_template_rows(
@@ -320,10 +326,13 @@ def render_viewport(
         else:
             after_cards.append(card_el)
 
-    # Section styling — gap via CSS custom property
+    # Section styling — gap via CSS custom property.
+    # touch.none on before/after sections (not outer container) so the focused
+    # section can conditionally enable native touch scrolling for oversized cards.
     section_cls = lambda alignment: combine_classes(
         flex_display, flex_direction.col, alignment, items.center,
-        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden
+        w.full, gap(f'[var(--{prefix}-section-gap)]'), overflow.hidden,
+        touch.none,
     )
 
     before_section = Div(
@@ -332,13 +341,22 @@ def render_viewport(
         cls=section_cls(justify.end)
     )
 
+    # Focus emphasis styling on the section (not the slot) so the shadow
+    # renders outside the overflow-y-auto clipping boundary.
+    focus_cls = combine_classes(
+        config.style.focus_ring,
+        config.style.focus_shadow,
+        config.style.focus_border_radius
+    )
+
+    # Focused section starts with touch.none; JS toggles to pan-y when
+    # card content overflows (see constrainFocusedSection in coordinator).
     focused_section = Div(
         focused_card,
         id=ids.viewport_section_focused,
         cls=combine_classes(
-            flex_display, justify.center, items.center, w.full,
-            p.x(f'[var(--{prefix}-focus-padding-x)]'),
-            p.b(f'[var(--{prefix}-focus-padding-b)]')
+            flex_display, justify.center, items.start, w.full,
+            overflow.y.auto, touch.none, focus_cls,
         )
     )
 
@@ -357,12 +375,13 @@ def render_viewport(
     )
     inner_style = f"grid-template-rows: {grid_rows}; max-width: {state.card_width}rem"
 
-    # Outer container: padding via CSS custom properties, opacity reveal via Tailwind classes
+    # Outer container: no touch.none — touch-action set per-section so the
+    # focused section can conditionally allow native scrolling for oversized cards.
     outer_cls = combine_classes(
         grow(), min_h._0,
         p.x(f'[var(--{prefix}-viewport-padding-x)]'),
         p.y(f'[var(--{prefix}-viewport-padding-y)]'),
-        overflow.hidden, touch.none,
+        overflow.hidden,
         opacity(0), transition.opacity, duration(150), ease._in
     )
 
@@ -406,4 +425,3 @@ def render_viewport(
         )
 
     return card_stack_el
-

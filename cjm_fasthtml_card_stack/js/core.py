@@ -59,6 +59,34 @@ def _generate_coordinator_js(
             inner.style.gridTemplateRows = tmpl;
         }};
 
+        // === Focused Section Constraint ===
+        // Caps the focused section's max-height to prevent oversized cards
+        // from overflowing the grid. Combined with overflow-y-auto on the
+        // focused section CSS, this enables scrolling when a card's content
+        // exceeds the available viewport height.
+        //
+        // Also toggles touch-action on the focused section:
+        // - No overflow (normal cards): touch-action: none — custom touch nav
+        // - Overflow (oversized cards): touch-action: pan-y — native scrolling
+        // touch-action is per-section (not on outer container) so the
+        // before/after sections always use custom touch nav.
+        //
+        // The overflow check is synchronous (forced reflow via offsetHeight)
+        // to ensure correct results regardless of which navigation path
+        // triggered the update (arrow keys, page nav, scrollbar, etc.).
+        ns.constrainFocusedSection = function() {{
+            const inner = document.getElementById('{ids.card_stack_inner}');
+            const focused = document.getElementById('{ids.viewport_section_focused}');
+            if (!inner || !focused) return;
+            const gap = parseFloat(getComputedStyle(inner).rowGap) || 0;
+            const maxH = inner.clientHeight - 2 * gap;
+            if (maxH > 0) focused.style.maxHeight = maxH + 'px';
+
+            // Force reflow so scrollHeight/clientHeight reflect the new maxHeight
+            focused.offsetHeight;
+            focused.style.touchAction = focused.scrollHeight > focused.clientHeight ? 'pan-y' : 'none';
+        }};
+
         // === Master Coordinator ===
         ns.applyAllViewportSettings = function() {{
             requestAnimationFrame(function() {{
@@ -66,6 +94,7 @@ def _generate_coordinator_js(
                 if (ns.applyScale) ns.applyScale();
                 if (ns.applyGridTemplate) ns.applyGridTemplate();
                 if (ns.recalculateHeight) ns.recalculateHeight();
+                if (ns.constrainFocusedSection) ns.constrainFocusedSection();
                 if (ns._setupSiblingObserver) ns._setupSiblingObserver();
 
                 if (ns._setupScrollNav) ns._setupScrollNav();
@@ -121,6 +150,14 @@ def _generate_coordinator_js(
                 _syncCountDropdown();
                 ns.applyAllViewportSettings();
             }}
+            // Always constrain focused section on any settle event.
+            // Navigation may be triggered from outside the card stack
+            // (page nav buttons, scrollbar) where afterSettle target is
+            // the external trigger element, not the OOB sections inside
+            // the card stack. constrainFocusedSection is cheap and
+            // idempotent — a duplicate call (when isCSSwap is true) is
+            // harmless since applyAllViewportSettings already calls it.
+            if (ns.constrainFocusedSection) ns.constrainFocusedSection();
         }}
 
         window.{handler_key} = {{ swap: _afterSwapHandler, settle: _afterSettleHandler }};

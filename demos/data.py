@@ -1,5 +1,80 @@
 """Sample data for card stack demos."""
 
+# Items with a mix of normal and very long text to test overflow scrolling.
+# Item 3 (index 2) and item 8 (index 7) are intentionally oversized to
+# exceed a typical card stack viewport height.
+OVERFLOW_ITEMS = [
+    "This is a normal-length item that fits comfortably in the card stack viewport without any overflow issues.",
+    "Another standard item. The card stack should display this alongside context cards above and below.",
+    # Intentionally very long — simulates a poorly-split transcript segment or
+    # a user merging many segments into one massive block.
+    (
+        "This is an oversized segment that simulates what happens when NLTK fails to split "
+        "properly due to lack of punctuation in the source transcript text or when the user "
+        "merges many text segments into a single large card. "
+        "The quick brown fox jumps over the lazy dog near the riverbank where the willows sway "
+        "gently in the afternoon breeze and the sunlight filters through the canopy creating "
+        "dappled patterns on the mossy ground below. "
+        "Meanwhile the birds sing their evening songs as the temperature begins to drop and the "
+        "shadows lengthen across the meadow stretching toward the old stone wall that marks the "
+        "boundary of the ancient estate. "
+        "The groundskeeper walks slowly along the gravel path checking each gate and fence post "
+        "making sure everything is secure before nightfall when the deer come down from the hills "
+        "to graze on the tender grass that grows in the sheltered valley. "
+        "In the distance the church bell rings marking the hour and the sound carries across the "
+        "still air reaching the farmhouses scattered along the ridge where families are gathering "
+        "for their evening meals around wooden tables worn smooth by generations of daily use. "
+        "The old clock on the mantelpiece ticks steadily marking each second with mechanical "
+        "precision as the fire crackles in the hearth sending sparks up the chimney into the "
+        "darkening sky above. "
+        "Tomorrow will bring new challenges and opportunities but for now the world is at peace "
+        "and the gentle rhythm of rural life continues as it has for centuries in this quiet "
+        "corner of the countryside where time seems to move at its own unhurried pace. "
+        "The farmer checks his almanac noting the phases of the moon and the predicted weather "
+        "patterns for the coming week planning his work accordingly because the harvest waits "
+        "for no one and the grain must be brought in before the autumn rains begin. "
+        "His wife tends the kitchen garden pulling weeds and checking the ripeness of the "
+        "tomatoes that hang heavy on their vines supported by wooden stakes driven into the "
+        "rich dark soil that has been cultivated by this family for five generations. "
+        "Their children play in the orchard climbing apple trees and building forts from fallen "
+        "branches while the family dog watches patiently from the porch occasionally barking at "
+        "a passing rabbit or squirrel that ventures too close to the vegetable patch."
+    ),
+    "Back to normal length. This item follows the oversized one to verify context cards still render properly after scrolling.",
+    "Standard item number five. The card stack should handle the transition between normal and oversized items smoothly.",
+    "Another regular item. Navigation should work identically for normal-sized cards — arrow keys, scroll wheel, click-to-focus.",
+    "Item seven is also normal length. The auto-adjust system should still calculate the correct visible count for these items.",
+    # Second oversized item — tests that overflow works at different positions in the list
+    (
+        "Here is another intentionally oversized segment placed later in the list to verify that "
+        "the overflow scrolling behavior works regardless of the item's position in the dataset. "
+        "The card stack must handle this gracefully whether the user arrives here by navigating "
+        "down from the top or up from the bottom or by clicking directly on this card. "
+        "When machine learning models process natural language they must handle sequences of "
+        "varying lengths and the challenge of maintaining context across long passages of text "
+        "is one of the fundamental problems in computational linguistics that researchers have "
+        "been working to solve for decades using increasingly sophisticated architectures. "
+        "The transformer architecture introduced the self-attention mechanism which allows the "
+        "model to weigh the importance of different parts of the input sequence when producing "
+        "each element of the output enabling much longer effective context windows than were "
+        "possible with recurrent neural networks that processed tokens sequentially. "
+        "Training these models requires enormous computational resources including thousands "
+        "of GPUs running for weeks or months on datasets containing billions of tokens of text "
+        "scraped from the internet and curated to remove harmful or low-quality content. "
+        "The resulting models can generate remarkably fluent and coherent text that is often "
+        "indistinguishable from human writing though they still struggle with factual accuracy "
+        "mathematical reasoning and maintaining consistency across very long documents. "
+        "Fine-tuning these foundation models on specific tasks using smaller curated datasets "
+        "and techniques like reinforcement learning from human feedback has proven to be an "
+        "effective way to align model behavior with human preferences and values. "
+        "The rapid pace of progress in this field has raised important questions about the "
+        "societal implications of increasingly capable AI systems and the need for thoughtful "
+        "governance frameworks that balance innovation with safety and fairness."
+    ),
+    "Item nine is back to normal. This verifies that navigating past the second oversized item works correctly.",
+    "The tenth and final item. All navigation patterns — keyboard arrows, page up/down, first/last — should work across the full list including oversized items.",
+]
+
 SAMPLE_ITEMS = [
     "Machine learning is a subset of artificial intelligence that enables systems to learn and improve from experience without being explicitly programmed.",
     "The core idea is to feed data into an algorithm, let it find patterns, and then use those patterns to make predictions or decisions on new, unseen data.",

@@ -35,6 +35,7 @@ def main():
     import demos.bottom as bottom_demo
     import demos.custom_position as custom_demo
     import demos.dual as dual_demo
+    import demos.overflow as overflow_demo
 
     print("\n" + "=" * 70)
     print("Initializing cjm-fasthtml-card-stack Demo")
@@ -62,11 +63,13 @@ def main():
     bottom = bottom_demo.setup()
     custom = custom_demo.setup()
     dual = dual_demo.setup()
+    overflow = overflow_demo.setup()
 
     print(f"  Basic demo: centered, click-to-focus, {len(basic['get_items']()):,} items")
     print(f"  Bottom demo: bottom-anchored, click-to-focus, {len(bottom['get_items']()):,} items")
     print(f"  Custom demo: focus_position=1, click-to-focus, {len(custom['get_items']()):,} items")
     print(f"  Dual demo: two stacks side-by-side, {len(dual['get_text_items']()):,} text + {len(dual['get_audio_items']()):,} audio")
+    print(f"  Overflow demo: oversized items, click-to-focus, {len(overflow['get_items']()):,} items")
 
     # Build page content factories using shared renderer
     _page_keys = (
@@ -85,6 +88,10 @@ def main():
     custom_page = render_demo_page(**{
         k: custom[k] for k in _page_keys if k in custom
     }, state_getter=custom['get_state'], items_getter=custom['get_items'])
+
+    overflow_page = render_demo_page(**{
+        k: overflow[k] for k in _page_keys if k in overflow
+    }, state_getter=overflow['get_state'], items_getter=overflow['get_items'])
 
     # -------------------------------------------------------------------------
     # Page routes
@@ -134,6 +141,16 @@ def main():
                                 (f"{len(custom['get_items']()):,} items", badge_colors.accent)],
                         href=demo_custom.to(),
                         btn_cls="btn btn-accent",
+                    ),
+                    _demo_card(
+                        "Overflow Demo",
+                        "Tests focused card scrolling when content exceeds the "
+                        "viewport height. Items #3 and #8 are intentionally oversized.",
+                        badges=[("Overflow scroll", badge_colors.primary),
+                                ("Click-to-focus", badge_colors.secondary),
+                                (f"{len(overflow['get_items']()):,} items", badge_colors.accent)],
+                        href=demo_overflow.to(),
+                        btn_cls="btn btn-warning",
                     ),
                     _demo_card(
                         "Dual Card Stack",
@@ -219,6 +236,14 @@ def main():
         )
 
     @router
+    def demo_overflow(request):
+        """Overflow demo — focused card scrolling for oversized content."""
+        return handle_htmx_request(
+            request, overflow_page,
+            wrap_fn=lambda content: wrap_with_layout(content, navbar=navbar)
+        )
+
+    @router
     def demo_dual(request):
         """Dual card stack demo with zone switching."""
         return handle_htmx_request(
@@ -236,6 +261,7 @@ def main():
             ("Basic", demo_basic),
             ("Bottom-Anchored", demo_bottom),
             ("Custom Position", demo_custom),
+            ("Overflow", demo_overflow),
             ("Dual", demo_dual),
         ],
         home_route=index,
@@ -245,6 +271,7 @@ def main():
     register_routes(
         app, router,
         basic['router'], bottom['router'], custom['router'],
+        overflow['router'],
         dual['text_router'], dual['audio_router']
     )
 
@@ -278,6 +305,7 @@ if __name__ == "__main__":
     print(f"  http://{display_host}:{port}/demo_basic    — Basic centered")
     print(f"  http://{display_host}:{port}/demo_bottom   — Bottom-anchored")
     print(f"  http://{display_host}:{port}/demo_custom   — Custom position (slot 1)")
+    print(f"  http://{display_host}:{port}/demo_overflow  — Overflow scrolling")
     print(f"  http://{display_host}:{port}/demo_dual     — Dual stacks with zone switching")
     print()
 

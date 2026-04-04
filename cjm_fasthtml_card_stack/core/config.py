@@ -43,13 +43,11 @@ class CardStackStyleConfig:
     slot_padding: str = "0.25rem"       # Padding around context card content
     viewport_padding_x: str = "0.5rem"  # Horizontal outer container padding
     viewport_padding_y: str = "0.5rem"  # Vertical outer container padding
-    focus_padding_x: str = "0.5rem"     # Horizontal focused section padding
-    focus_padding_b: str = "1rem"       # Bottom focused section padding
 
-    # Visual emphasis (CSS class strings)
-    focus_ring: str = _DEFAULT_FOCUS_RING                    # Ring classes for focused card
-    focus_shadow: str = _DEFAULT_FOCUS_SHADOW                # Shadow classes for focused card
-    focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused card
+    # Visual emphasis (CSS class strings — applied to focused section, not slot)
+    focus_ring: str = _DEFAULT_FOCUS_RING                    # Ring classes for focused section
+    focus_shadow: str = _DEFAULT_FOCUS_SHADOW                # Shadow classes for focused section
+    focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused section
 
     def css_vars_style(
         self,
@@ -60,9 +58,7 @@ class CardStackStyleConfig:
             f"--{prefix}-section-gap: {self.section_gap}; "
             f"--{prefix}-slot-padding: {self.slot_padding}; "
             f"--{prefix}-viewport-padding-x: {self.viewport_padding_x}; "
-            f"--{prefix}-viewport-padding-y: {self.viewport_padding_y}; "
-            f"--{prefix}-focus-padding-x: {self.focus_padding_x}; "
-            f"--{prefix}-focus-padding-b: {self.focus_padding_b}"
+            f"--{prefix}-viewport-padding-y: {self.viewport_padding_y}"
         )
 
 # %% ../../nbs/core/config.ipynb #b1000008
