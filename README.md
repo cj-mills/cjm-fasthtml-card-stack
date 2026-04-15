@@ -70,61 +70,61 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_html_ids
     components_controls --> core_config
+    components_controls --> core_html_ids
     components_progress --> core_html_ids
-    components_settings_modal --> core_html_ids
     components_settings_modal --> core_config
+    components_settings_modal --> core_html_ids
     components_states --> core_html_ids
-    components_viewport --> core_html_ids
-    components_viewport --> helpers_focus
-    components_viewport --> core_config
     components_viewport --> core_models
+    components_viewport --> core_config
     components_viewport --> components_states
+    components_viewport --> helpers_focus
     components_viewport --> core_constants
+    components_viewport --> core_html_ids
     helpers_focus --> core_html_ids
     js_auto_adjust --> core_models
+    js_auto_adjust --> core_constants
     js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_config
-    js_auto_adjust --> core_constants
-    js_controls --> core_models
     js_controls --> core_constants
+    js_controls --> core_models
     js_controls --> core_html_ids
     js_controls --> core_config
-    js_core --> core_constants
-    js_core --> js_auto_adjust
-    js_core --> core_html_ids
-    js_core --> js_navigation
-    js_core --> js_controls
     js_core --> js_scroll
-    js_core --> core_config
-    js_core --> js_touch
+    js_core --> core_constants
+    js_core --> js_controls
     js_core --> core_models
-    js_core --> js_viewport
+    js_core --> core_config
+    js_core --> js_navigation
+    js_core --> js_auto_adjust
     js_core --> core_button_ids
+    js_core --> js_touch
+    js_core --> core_html_ids
+    js_core --> js_viewport
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_html_ids
     js_scroll --> core_button_ids
+    js_scroll --> core_html_ids
     js_touch --> core_constants
-    js_touch --> core_html_ids
     js_touch --> core_button_ids
+    js_touch --> core_html_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_html_ids
-    keyboard_actions --> core_config
-    keyboard_actions --> js_core
     keyboard_actions --> core_models
+    keyboard_actions --> core_config
     keyboard_actions --> core_button_ids
-    routes_handlers --> core_html_ids
+    keyboard_actions --> js_core
+    keyboard_actions --> core_html_ids
+    routes_handlers --> core_models
     routes_handlers --> components_viewport
     routes_handlers --> core_config
-    routes_handlers --> core_models
     routes_handlers --> components_progress
     routes_handlers --> helpers_focus
-    routes_router --> core_html_ids
+    routes_handlers --> core_html_ids
     routes_router --> routes_handlers
-    routes_router --> core_config
     routes_router --> core_models
+    routes_router --> core_config
+    routes_router --> core_html_ids
 ```
 
 *55 cross-module dependencies detected*
@@ -391,7 +391,7 @@ class CardStackConfig:
     visible_count_options: Tuple[int, ...] = (1, 3, 5, 7, 9)  # Choices for card count dropdown
     card_width_min: int = 30  # Width slider minimum (rem)
     card_width_max: int = 120  # Width slider maximum (rem)
-    card_width_step: int = 5  # Width slider step (rem)
+    card_width_step: int = 1  # Width slider step (rem) — 1rem jumps give finer control than legacy 5rem default
     card_scale_min: int = 50  # Scale slider minimum (%)
     card_scale_max: int = 200  # Scale slider maximum (%)
     card_scale_step: int = 10  # Scale slider step (%)

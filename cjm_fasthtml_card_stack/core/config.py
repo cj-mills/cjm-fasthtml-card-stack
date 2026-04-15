@@ -73,7 +73,7 @@ class CardStackConfig:
     # Width slider bounds
     card_width_min: int = 30    # Width slider minimum (rem)
     card_width_max: int = 120   # Width slider maximum (rem)
-    card_width_step: int = 5    # Width slider step (rem)
+    card_width_step: int = 1    # Width slider step (rem) — 1rem jumps give finer control than legacy 5rem default
 
     # Scale slider bounds
     card_scale_min: int = 50    # Scale slider minimum (%)
