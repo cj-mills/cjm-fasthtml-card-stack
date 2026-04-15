@@ -389,11 +389,15 @@ def render_viewport(
     # CSS custom property declarations on outer container
     outer_style = config.style.css_vars_style(prefix)
 
-    # Hidden input for focused index (needed for keyboard nav hx-include and OOB updates)
+    # Hidden input for focused index (needed for keyboard nav hx-include and OOB updates).
+    # Also carries data-total-items so the boundary no-op guard and any other
+    # client-side code can read both values from a single always-fresh element
+    # (this input is OOB-swapped on every nav via render_focus_oob).
     focused_input = Hidden(
         id=ids.focused_index_input,
         name=form_input_name,
         value=str(state.focused_index),
+        data_total_items=str(total_items),
     )
 
     card_stack_el = Div(

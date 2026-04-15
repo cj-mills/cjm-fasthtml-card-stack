@@ -49,22 +49,29 @@ def build_nav_response(
     form_input_name: str = "focused_index",  # Name for the focused index hidden input
 ) -> Tuple:  # OOB elements (slots + progress + focus + scrollbar)
     """Build full OOB response for navigation: slots + progress + focus inputs + scrollbar."""
+    total_items = len(card_items)
     slots_oob = build_slots_response(
         card_items=card_items, state=state, config=config,
         ids=ids, urls=urls, render_card=render_card,
     )
     progress_oob = render_progress_indicator(
-        state.focused_index, len(card_items), ids,
+        state.focused_index, total_items, ids,
         label=progress_label, oob=True,
     )
-    focus_oob = render_focus_oob(state.focused_index, ids, form_input_name=form_input_name)
+    # Pass total_items so the OOB-swapped hidden input carries data-total-items
+    # for the client-side boundary no-op guard to read a fresh value every nav.
+    focus_oob = render_focus_oob(
+        state.focused_index, ids,
+        form_input_name=form_input_name,
+        total_items=total_items,
+    )
 
     result = (*slots_oob, progress_oob, *focus_oob)
 
     # Scrollbar OOB keeps track data-attributes in sync
     if config.show_scrollbar:
         scrollbar_oob = render_card_stack_scrollbar(
-            state, config, len(card_items), oob=True,
+            state, config, total_items, oob=True,
         )
         result = result + (scrollbar_oob,)
 

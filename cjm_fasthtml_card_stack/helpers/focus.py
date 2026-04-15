@@ -58,13 +58,24 @@ def render_focus_oob(
     focused_index: int,  # The item index to focus
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
     form_input_name: str = "focused_index",  # Field name for the form input
+    total_items: Optional[int] = None,  # Total item count (emitted as data-total-items for client-side boundary checks)
 ) -> Tuple[Hidden, ...]:  # Hidden inputs with OOB swap
     """Render OOB hidden inputs to synchronize focus after HTMX swap."""
+    attrs = {}
+    if total_items is not None:
+        # The boundary no-op guard reads this to decide whether an up/down
+        # nav would hit a boundary. Piggybacking it on the focused_index_input
+        # keeps focused_index + total_items in a single always-fresh element
+        # (the input is OOB-swapped on every navigation), avoiding stale reads
+        # from the card-stack container's data attrs (which are only set on
+        # initial render).
+        attrs["data_total_items"] = str(total_items)
     return (
         Hidden(
             id=ids.focused_index_input,
             name=form_input_name,
             value=str(focused_index),
             hx_swap_oob="true",
+            **attrs,
         ),
     )

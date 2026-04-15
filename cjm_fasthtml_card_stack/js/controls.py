@@ -38,6 +38,19 @@ def _generate_width_mgmt_js(
             }}, 500);
         }}
 
+        // Effective rendered width of the inner container, expressed in rem.
+        // When the stored `max-width: Xrem` exceeds the parent container's
+        // available width, the card renders at the container width and the
+        // stored value becomes a "ceiling the layout never reaches." The
+        // decreaseWidth handler uses this effective width to avoid a dead
+        // zone where multiple button presses produce no visible change.
+        ns._getEffectiveWidthRem = function() {{
+            const inner = document.getElementById('{ids.card_stack_inner}');
+            if (!inner) return Infinity;
+            const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+            return inner.offsetWidth / remPx;
+        }};
+
         ns.updateWidth = function(value) {{
             const inner = document.getElementById('{ids.card_stack_inner}');
             if (!inner) return;
@@ -52,7 +65,15 @@ def _generate_width_mgmt_js(
         ns.decreaseWidth = function() {{
             const slider = document.getElementById('{ids.width_slider}');
             const current = slider ? parseInt(slider.value) : {DEFAULT_CARD_WIDTH};
-            ns.updateWidth(Math.max({config.card_width_min}, current - {config.card_width_step}));
+            // Snap to the effective rendered width first. If the stored value
+            // is above what the container actually renders, decrementing from
+            // the stored value would produce no visible change until the value
+            // drops below the container boundary — the "dead zone." Starting
+            // from the effective width ensures every press produces a visible
+            // narrowing step.
+            const effective = Math.floor(ns._getEffectiveWidthRem());
+            const base = Math.min(current, effective);
+            ns.updateWidth(Math.max({config.card_width_min}, base - {config.card_width_step}));
         }};
 
         ns.increaseWidth = function() {{

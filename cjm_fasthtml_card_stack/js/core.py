@@ -38,6 +38,7 @@ from cjm_fasthtml_virtual_scrollbar.js.scrollbar import generate_scrollbar_js as
 def _generate_coordinator_js(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     config: CardStackConfig,  # Config for prefix-unique listener guards
+    button_ids: CardStackButtonIds,  # Nav button IDs (for boundary-no-op guard)
     focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # JS code fragment for master coordinator
     """Generate JS for the master coordinator and HTMX listener."""
@@ -90,6 +91,41 @@ def _generate_coordinator_js(
             focused.style.touchAction = focused.scrollHeight > focused.clientHeight ? 'pan-y' : 'none';
         }};
 
+        // === Boundary Index Helpers ===
+        // Read live focused index + total from the focused_index_input hidden input.
+        // This input is OOB-swapped on every navigation (via render_focus_oob) and
+        // carries both `value` (focused_index) and `data-total-items` — making it
+        // the single always-fresh source of truth for boundary checks. Reading from
+        // the card-stack container's data attributes would NOT work here: those
+        // attributes are set only on initial render, and the nav response OOB-swaps
+        // only the viewport sections, progress, focus input, and scrollbar — never
+        // the outer card-stack container. Relying on them produces a stale-at-0 bug
+        // that blocks all upward nav and never blocks downward nav at the bottom.
+        ns._getFocusedIndex = function() {{
+            const input = document.getElementById('{ids.focused_index_input}');
+            return input ? parseInt(input.value || '0') : 0;
+        }};
+        ns._getTotalItems = function() {{
+            const input = document.getElementById('{ids.focused_index_input}');
+            return input ? parseInt(input.dataset.totalItems || '0') : 0;
+        }};
+
+        // Buttons whose click would move the focus UP (or to the first item).
+        // If focused index is already 0, navigation is a no-op and the HTMX
+        // request is canceled before it fires.
+        const _UP_BTN_IDS = new Set([
+            '{button_ids.nav_up}',
+            '{button_ids.nav_page_up}',
+            '{button_ids.nav_first}',
+        ]);
+        // Buttons whose click would move the focus DOWN (or to the last item).
+        // If focused index is already total-1, navigation is a no-op.
+        const _DOWN_BTN_IDS = new Set([
+            '{button_ids.nav_down}',
+            '{button_ids.nav_page_down}',
+            '{button_ids.nav_last}',
+        ]);
+
         // === Master Coordinator ===
         ns.applyAllViewportSettings = function() {{
             requestAnimationFrame(function() {{
@@ -122,8 +158,27 @@ def _generate_coordinator_js(
         // Remove old listeners from previous IIFE (handles HTMX page navigation
         // that re-executes this script without a full page reload).
         if (window.{handler_key}) {{
+            document.body.removeEventListener('htmx:beforeRequest', window.{handler_key}.beforeRequest);
             document.body.removeEventListener('htmx:afterSwap', window.{handler_key}.swap);
             document.body.removeEventListener('htmx:afterSettle', window.{handler_key}.settle);
+        }}
+
+        // Boundary no-op guard: cancel nav requests when already at the boundary.
+        // Covers both HTMX-triggered (ArrowUp/Down) and JS-callback (page/first/last)
+        // paths uniformly — all ultimately fire HTMX from a known nav button.
+        function _beforeRequestHandler(evt) {{
+            const elt = evt.detail.elt;
+            if (!elt || !elt.id) return;
+            const idx = ns._getFocusedIndex();
+            const total = ns._getTotalItems();
+            if (_UP_BTN_IDS.has(elt.id) && idx <= 0) {{
+                evt.preventDefault();
+                return;
+            }}
+            if (_DOWN_BTN_IDS.has(elt.id) && total > 0 && idx >= total - 1) {{
+                evt.preventDefault();
+                return;
+            }}
         }}
 
         function _afterSwapHandler(evt) {{
@@ -163,7 +218,12 @@ def _generate_coordinator_js(
             if (ns.constrainFocusedSection) ns.constrainFocusedSection();
         }}
 
-        window.{handler_key} = {{ swap: _afterSwapHandler, settle: _afterSettleHandler }};
+        window.{handler_key} = {{
+            beforeRequest: _beforeRequestHandler,
+            swap: _afterSwapHandler,
+            settle: _afterSettleHandler,
+        }};
+        document.body.addEventListener('htmx:beforeRequest', _beforeRequestHandler);
         document.body.addEventListener('htmx:afterSwap', _afterSwapHandler);
         document.body.addEventListener('htmx:afterSettle', _afterSettleHandler);
 
@@ -235,7 +295,7 @@ def generate_card_stack_js(
     count_js = _generate_card_count_mgmt_js(ids, config, urls)
     auto_js = _generate_auto_adjust_js(ids, config, urls, focus_position)
     global_cbs_js = _generate_global_callbacks_js(config)
-    coordinator_js = _generate_coordinator_js(ids, config, focus_position)
+    coordinator_js = _generate_coordinator_js(ids, config, button_ids, focus_position)
 
     # Scrollbar JS (separate IIFE, runs after the main card stack IIFE)
     scrollbar_js = ""

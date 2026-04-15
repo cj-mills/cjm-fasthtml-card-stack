@@ -70,60 +70,60 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_config
     components_controls --> core_html_ids
+    components_controls --> core_config
     components_progress --> core_html_ids
-    components_settings_modal --> core_config
     components_settings_modal --> core_html_ids
+    components_settings_modal --> core_config
     components_states --> core_html_ids
-    components_viewport --> core_config
     components_viewport --> core_html_ids
-    components_viewport --> core_models
     components_viewport --> helpers_focus
+    components_viewport --> core_config
+    components_viewport --> core_models
     components_viewport --> components_states
     components_viewport --> core_constants
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_constants
-    js_auto_adjust --> core_config
-    js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_models
-    js_controls --> core_constants
-    js_controls --> core_config
-    js_controls --> core_html_ids
+    js_auto_adjust --> core_html_ids
+    js_auto_adjust --> core_config
+    js_auto_adjust --> core_constants
     js_controls --> core_models
+    js_controls --> core_constants
+    js_controls --> core_html_ids
+    js_controls --> core_config
     js_core --> core_constants
+    js_core --> js_auto_adjust
+    js_core --> core_html_ids
+    js_core --> js_navigation
     js_core --> js_controls
+    js_core --> js_scroll
+    js_core --> core_config
+    js_core --> js_touch
+    js_core --> core_models
     js_core --> js_viewport
     js_core --> core_button_ids
-    js_core --> core_config
-    js_core --> core_html_ids
-    js_core --> js_scroll
-    js_core --> core_models
-    js_core --> js_touch
-    js_core --> js_auto_adjust
-    js_core --> js_navigation
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
-    js_touch --> core_button_ids
+    js_scroll --> core_button_ids
     js_touch --> core_constants
     js_touch --> core_html_ids
+    js_touch --> core_button_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_button_ids
-    keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
-    keyboard_actions --> core_models
+    keyboard_actions --> core_config
     keyboard_actions --> js_core
-    routes_handlers --> components_progress
-    routes_handlers --> components_viewport
-    routes_handlers --> helpers_focus
-    routes_handlers --> core_config
+    keyboard_actions --> core_models
+    keyboard_actions --> core_button_ids
     routes_handlers --> core_html_ids
+    routes_handlers --> components_viewport
+    routes_handlers --> core_config
     routes_handlers --> core_models
+    routes_handlers --> components_progress
+    routes_handlers --> helpers_focus
+    routes_router --> core_html_ids
     routes_router --> routes_handlers
     routes_router --> core_config
-    routes_router --> core_html_ids
     routes_router --> core_models
 ```
 
@@ -586,6 +586,7 @@ from cjm_fasthtml_card_stack.js.core import (
 def _generate_coordinator_js(
     ids: CardStackHtmlIds,  # HTML IDs for this instance
     config: CardStackConfig,  # Config for prefix-unique listener guards
+    button_ids: CardStackButtonIds,  # Nav button IDs (for boundary-no-op guard)
     focus_position: Optional[int] = None,  # Focus slot offset (None=center, -1=bottom, 0=top)
 ) -> str:  # JS code fragment for master coordinator
     "Generate JS for the master coordinator and HTMX listener."
@@ -657,6 +658,7 @@ def render_focus_oob(
     focused_index: int,  # The item index to focus
     ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
     form_input_name: str = "focused_index",  # Field name for the form input
+    total_items: Optional[int] = None,  # Total item count (emitted as data-total-items for client-side boundary checks)
 ) -> Tuple[Hidden, ...]:  # Hidden inputs with OOB swap
     "Render OOB hidden inputs to synchronize focus after HTMX swap."
 ```
