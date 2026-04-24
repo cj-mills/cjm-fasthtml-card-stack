@@ -30,6 +30,9 @@ from cjm_fasthtml_tailwind.core.base import combine_classes
 
 from cjm_fasthtml_lucide_icons.factory import lucide_icon
 
+# Design system recipes (V11 icon-size roles)
+from cjm_fasthtml_design_system.icons import icons
+
 from ..core.config import CardStackConfig
 from ..core.html_ids import CardStackHtmlIds
 
@@ -158,9 +161,9 @@ def _render_card_count_section(
 
 # %% ../../nbs/components/settings_modal.ipynb #sm-trigger-button
 def render_settings_trigger(
-    modal_id: str,          # ID of the settings modal dialog to open
-    icon_size: int = 4,     # lucide icon size
-) -> Button:                # ghost button with sliders-horizontal icon
+    modal_id: str,                          # ID of the settings modal dialog to open
+    icon_size: int = icons.icon_button,     # lucide icon size (V11 icon-only-button role)
+) -> Button:                                # ghost button with sliders-horizontal icon
     """Render a settings icon button that opens the card stack settings modal."""
     return Button(
         lucide_icon("sliders-horizontal", size=icon_size),
@@ -238,7 +241,7 @@ def render_card_stack_settings_modal(
             # Close button (top-right corner)
             Form(
                 Button(
-                    "\u2715",
+                    "✕",
                     cls=combine_classes(
                         btn, btn_sizes.sm, btn_modifiers.circle, btn_styles.ghost,
                         position.absolute, right._2, top._2,
@@ -248,7 +251,7 @@ def render_card_stack_settings_modal(
             ),
             # Title
             H3(
-                lucide_icon("sliders-horizontal", size=5, cls=str(m.r(2))),
+                lucide_icon("sliders-horizontal", size=icons.section_header, cls=str(m.r(2))),
                 title,
                 cls=combine_classes(
                     font_size.lg, font_weight.bold,
