@@ -9,6 +9,7 @@ __all__ = ['CardStackStyleConfig', 'CardStackConfig']
 from dataclasses import dataclass, field
 from typing import Tuple
 
+from cjm_fasthtml_tailwind.utilities.layout import z
 from cjm_fasthtml_tailwind.utilities.effects import ring, shadow
 from cjm_fasthtml_tailwind.core.base import combine_classes
 from cjm_fasthtml_daisyui.utilities.semantic_colors import shadow_dui, ring_dui
@@ -33,6 +34,7 @@ def _reset_prefix_counter() -> None:
 _DEFAULT_FOCUS_RING: str = combine_classes(ring(1), ring_dui("color-mix(in_oklch,var(--color-primary),transparent_50%)"))
 _DEFAULT_FOCUS_SHADOW: str = combine_classes(shadow.lg, shadow_dui.primary)
 _DEFAULT_FOCUS_BORDER_RADIUS: str = str(border_radius.box)
+_DEFAULT_FOCUS_Z_INDEX: str = str(z(1))
 
 # %% ../../nbs/core/config.ipynb #p72afv0hap
 @dataclass
@@ -48,7 +50,8 @@ class CardStackStyleConfig:
     focus_ring: str = _DEFAULT_FOCUS_RING                    # Ring classes for focused section
     focus_shadow: str = _DEFAULT_FOCUS_SHADOW                # Shadow classes for focused section
     focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused section
-
+    focus_z_index: str = _DEFAULT_FOCUS_Z_INDEX              # Z-index class for focused section
+    
     def css_vars_style(
         self,
         prefix: str,  # Card stack instance prefix

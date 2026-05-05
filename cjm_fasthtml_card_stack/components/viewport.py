@@ -214,7 +214,8 @@ def render_all_slots_oob(
     focus_cls = combine_classes(
         config.style.focus_ring,
         config.style.focus_shadow,
-        config.style.focus_border_radius
+        config.style.focus_border_radius,
+        config.style.focus_z_index
     )
 
     # Focused section starts with touch.none; JS toggles to pan-y when
@@ -347,7 +348,8 @@ def render_viewport(
     focus_cls = combine_classes(
         config.style.focus_ring,
         config.style.focus_shadow,
-        config.style.focus_border_radius
+        config.style.focus_border_radius,
+        config.style.focus_z_index
     )
 
     # Focused section starts with touch.none; JS toggles to pan-y when

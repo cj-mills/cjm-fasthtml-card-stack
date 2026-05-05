@@ -11,9 +11,7 @@ from typing import Any
 from fasthtml.common import Div, Span, Input, Dialog, Button, Form, H3, Label, FT
 
 from cjm_fasthtml_daisyui.components.actions.modal import modal, modal_box, modal_backdrop
-from cjm_fasthtml_daisyui.components.actions.button import (
-    btn, btn_sizes, btn_styles, btn_modifiers,
-)
+from cjm_fasthtml_daisyui.components.actions.button import btn_modifiers
 from cjm_fasthtml_daisyui.components.data_input.range_slider import range_dui, range_sizes
 from cjm_fasthtml_daisyui.components.data_input.toggle import toggle, toggle_sizes
 from cjm_fasthtml_daisyui.utilities.semantic_colors import text_dui, border_dui
@@ -30,8 +28,9 @@ from cjm_fasthtml_tailwind.core.base import combine_classes
 
 from cjm_fasthtml_lucide_icons.factory import lucide_icon
 
-# Design system recipes (V11 icon-size roles)
-from cjm_fasthtml_design_system.icons import icons
+# Design system recipes (V1 button roles, V11 icon-size roles)
+from cjm_fasthtml_design_system.buttons import buttons
+from cjm_fasthtml_design_system.icons import icons, IconSize
 
 from ..core.config import CardStackConfig
 from ..core.html_ids import CardStackHtmlIds
@@ -161,13 +160,13 @@ def _render_card_count_section(
 
 # %% ../../nbs/components/settings_modal.ipynb #sm-trigger-button
 def render_settings_trigger(
-    modal_id: str,                          # ID of the settings modal dialog to open
-    icon_size: int = icons.icon_button,     # lucide icon size (V11 icon-only-button role)
-) -> Button:                                # ghost button with sliders-horizontal icon
+    modal_id: str,                                # ID of the settings modal dialog to open
+    icon_size: IconSize = icons.ghost_button,     # lucide icon size (V11.R3 ghost-button: "full" — pairs with V1.modal_disclosure at btn-xs)
+) -> Button:                                      # ghost button with sliders-horizontal icon
     """Render a settings icon button that opens the card stack settings modal."""
     return Button(
         lucide_icon("sliders-horizontal", size=icon_size),
-        cls=combine_classes(btn, btn_sizes.sm, btn_styles.ghost, btn_modifiers.circle),
+        cls=combine_classes(buttons.modal_disclosure, btn_modifiers.circle),
         title="Card stack settings",
         onclick=f"document.getElementById('{modal_id}').showModal();",
         type="button",
@@ -243,7 +242,7 @@ def render_card_stack_settings_modal(
                 Button(
                     "✕",
                     cls=combine_classes(
-                        btn, btn_sizes.sm, btn_modifiers.circle, btn_styles.ghost,
+                        buttons.soft_dismissal, btn_modifiers.circle,
                         position.absolute, right._2, top._2,
                     ),
                 ),
