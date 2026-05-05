@@ -25,6 +25,6 @@ cjm_fasthtml_card_stack = "cjm_fasthtml_card_stack._modidx:d"
 version = {attr = "cjm_fasthtml_card_stack.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["cjm_fasthtml_card_stack"]
+include = ["cjm_fasthtml_card_stack*"]
 
 [tool.nbdev]
