@@ -15,6 +15,8 @@ from cjm_fasthtml_daisyui.components.data_display.card import card, card_body
 from cjm_fasthtml_daisyui.components.feedback.loading import loading, loading_styles, loading_sizes
 from cjm_fasthtml_daisyui.utilities.semantic_colors import bg_dui, text_dui
 
+from cjm_fasthtml_design_system.text_tiers import text_tiers
+
 # Tailwind utilities
 from cjm_fasthtml_tailwind.utilities.borders import border, border_color
 from cjm_fasthtml_tailwind.utilities.effects import shadow
@@ -42,7 +44,7 @@ def render_placeholder_card(
                 text,
                 cls=combine_classes(
                     font_size.lg, italic,
-                    text_dui.base_content.opacity(30),
+                    text_tiers.subtle,
                     # p.y(4)
                 )
             ),
@@ -67,7 +69,7 @@ def render_loading_state(
             Span(cls=combine_classes(loading, loading_styles.spinner, loading_sizes.lg)),
             P(
                 message,
-                cls=combine_classes(m.t(4), text_dui.base_content.opacity(60))
+                cls=combine_classes(m.t(4), text_tiers.tertiary)
             ),
             cls=combine_classes(
                 flex_display, flex_direction.col, items.center, justify.center,
@@ -88,14 +90,14 @@ def render_empty_state(
         P(
             title,
             cls=combine_classes(
-                text_dui.base_content.opacity(40),
+                text_tiers.muted,
                 text_align.center, font_size.lg
             )
         ),
         P(
             subtitle,
             cls=combine_classes(
-                text_dui.base_content.opacity(30),
+                text_tiers.subtle,
                 text_align.center, font_size.sm, m.t(2)
             )
         ) if subtitle else None,

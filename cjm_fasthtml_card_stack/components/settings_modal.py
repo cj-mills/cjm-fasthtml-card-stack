@@ -16,6 +16,8 @@ from cjm_fasthtml_daisyui.components.data_input.range_slider import range_dui, r
 from cjm_fasthtml_daisyui.components.data_input.toggle import toggle, toggle_sizes
 from cjm_fasthtml_daisyui.utilities.semantic_colors import text_dui, border_dui
 
+from cjm_fasthtml_design_system.text_tiers import text_tiers
+
 from cjm_fasthtml_tailwind.utilities.spacing import p, m
 from cjm_fasthtml_tailwind.utilities.sizing import w, max_w
 from cjm_fasthtml_tailwind.utilities.typography import font_size, font_weight
@@ -58,7 +60,7 @@ def _render_slider_with_labels(
     disabled: bool = False,  # whether slider is disabled
 ) -> Div:              # slider row with end labels
     """Render a range slider with low/high labels."""
-    label_cls = combine_classes(font_size.xs, text_dui.base_content.opacity(50))
+    label_cls = combine_classes(font_size.xs, text_tiers.muted)
 
     attrs = dict(
         type="range",
@@ -112,12 +114,12 @@ def _render_card_count_section(
     tick_marks = Div(
         *[Span("|") for _ in opts],
         cls=combine_classes(justify.between, flex_display, p.x(0.5), font_size.xs,
-                           text_dui.base_content.opacity(30)),
+                           text_tiers.subtle),
     )
     tick_labels = Div(
         *[Span(str(v)) for v in opts],
         cls=combine_classes(justify.between, flex_display, p.x(0.5), font_size.xs,
-                           text_dui.base_content.opacity(50)),
+                           text_tiers.muted),
     )
 
     slider_attrs = dict(
@@ -138,7 +140,7 @@ def _render_card_count_section(
         Div(
             _render_section_label("Cards"),
             Label(
-                Span("Auto", cls=combine_classes(font_size.xs, text_dui.base_content.opacity(70))),
+                Span("Auto", cls=combine_classes(font_size.xs, text_tiers.secondary)),
                 Input(
                     type="checkbox",
                     id=ids.card_count_auto_toggle,

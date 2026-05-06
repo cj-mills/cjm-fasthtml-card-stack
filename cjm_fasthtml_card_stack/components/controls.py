@@ -15,6 +15,8 @@ from cjm_fasthtml_daisyui.components.data_input.range_slider import range_dui, r
 from cjm_fasthtml_daisyui.components.data_input.select import select, select_sizes
 from cjm_fasthtml_daisyui.utilities.semantic_colors import text_dui
 
+from cjm_fasthtml_design_system.text_tiers import text_tiers
+
 # Tailwind utilities
 from cjm_fasthtml_tailwind.utilities.flexbox_and_grid import (
     flex_display, items, gap, grow
@@ -39,7 +41,7 @@ def render_width_slider(
     return Div(
         Span(
             "Narrow",
-            cls=combine_classes(font_size.xs, text_dui.base_content.opacity(50))
+            cls=combine_classes(font_size.xs, text_tiers.muted)
         ),
         Input(
             type="range",
@@ -53,7 +55,7 @@ def render_width_slider(
         ),
         Span(
             "Wide",
-            cls=combine_classes(font_size.xs, text_dui.base_content.opacity(50))
+            cls=combine_classes(font_size.xs, text_tiers.muted)
         ),
         cls=combine_classes(flex_display, items.center, gap(3), w.full)
     )
@@ -70,7 +72,7 @@ def render_scale_slider(
     return Div(
         Span(
             "Smaller",
-            cls=combine_classes(font_size.xs, text_dui.base_content.opacity(50))
+            cls=combine_classes(font_size.xs, text_tiers.muted)
         ),
         Input(
             type="range",
@@ -84,7 +86,7 @@ def render_scale_slider(
         ),
         Span(
             "Larger",
-            cls=combine_classes(font_size.xs, text_dui.base_content.opacity(50))
+            cls=combine_classes(font_size.xs, text_tiers.muted)
         ),
         cls=combine_classes(flex_display, items.center, gap(3), w.full)
     )
