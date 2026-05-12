@@ -77,48 +77,48 @@ graph LR
     components_settings_modal --> core_html_ids
     components_states --> core_html_ids
     components_viewport --> core_models
-    components_viewport --> core_config
-    components_viewport --> components_states
-    components_viewport --> helpers_focus
     components_viewport --> core_constants
+    components_viewport --> helpers_focus
+    components_viewport --> core_config
     components_viewport --> core_html_ids
+    components_viewport --> components_states
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_models
     js_auto_adjust --> core_constants
+    js_auto_adjust --> core_models
     js_auto_adjust --> core_html_ids
     js_auto_adjust --> core_config
     js_controls --> core_constants
     js_controls --> core_models
     js_controls --> core_html_ids
     js_controls --> core_config
-    js_core --> js_scroll
-    js_core --> core_constants
     js_core --> js_controls
     js_core --> core_models
-    js_core --> core_config
     js_core --> js_navigation
     js_core --> js_auto_adjust
+    js_core --> core_constants
+    js_core --> core_config
     js_core --> core_button_ids
-    js_core --> js_touch
-    js_core --> core_html_ids
+    js_core --> js_scroll
     js_core --> js_viewport
+    js_core --> core_html_ids
+    js_core --> js_touch
     js_navigation --> core_button_ids
-    js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
+    js_scroll --> core_button_ids
+    js_scroll --> core_constants
     js_touch --> core_constants
     js_touch --> core_button_ids
     js_touch --> core_html_ids
     js_viewport --> core_html_ids
+    keyboard_actions --> js_core
     keyboard_actions --> core_models
     keyboard_actions --> core_config
     keyboard_actions --> core_button_ids
-    keyboard_actions --> js_core
     keyboard_actions --> core_html_ids
     routes_handlers --> core_models
+    routes_handlers --> components_progress
     routes_handlers --> components_viewport
     routes_handlers --> core_config
-    routes_handlers --> components_progress
     routes_handlers --> helpers_focus
     routes_handlers --> core_html_ids
     routes_router --> routes_handlers
@@ -161,8 +161,17 @@ def create_card_stack_focus_zone(
     on_focus_change: Optional[str] = None,  # JS callback name on focus change
     hidden_input_prefix: Optional[str] = None,  # Prefix for keyboard nav hidden inputs
     data_attributes: Tuple[str, ...] = (),  # Data attributes to track on focused items
+    label: Optional[str] = None,  # Human-readable label for keyboard-hints display (falls back to zone id)
 ) -> FocusZone:  # Configured focus zone for the card stack
-    "Create a focus zone for a card stack viewport."
+    """
+    Create a focus zone for a card stack viewport.
+    
+    Set `label` to a human-readable string (e.g., "Text Segmentation") when
+    consuming via `cjm-fasthtml-keyboard-navigation` 0.0.22+'s zone-aware
+    keyboard-hints modal — the label renders as a per-zone section header
+    ("Text Segmentation — Navigation"). Without `label`, the modal falls
+    back to the raw zone id (which is technical, e.g., "sd-seg-text-cards").
+    """
 ```
 
 ``` python
@@ -374,6 +383,7 @@ class CardStackStyleConfig:
     focus_ring: str = _DEFAULT_FOCUS_RING  # Ring classes for focused section
     focus_shadow: str = _DEFAULT_FOCUS_SHADOW  # Shadow classes for focused section
     focus_border_radius: str = _DEFAULT_FOCUS_BORDER_RADIUS  # Border radius class for focused section
+    focus_z_index: str = _DEFAULT_FOCUS_Z_INDEX  # Z-index class for focused section
     
     def css_vars_style(
             self,
@@ -408,6 +418,7 @@ _prefix_counter: int = 0
 _DEFAULT_FOCUS_RING: str
 _DEFAULT_FOCUS_SHADOW: str
 _DEFAULT_FOCUS_BORDER_RADIUS: str
+_DEFAULT_FOCUS_Z_INDEX: str
 ```
 
 ### Constants (`constants.ipynb`)
@@ -1135,9 +1146,9 @@ def _render_card_count_section(
 
 ``` python
 def render_settings_trigger(
-    modal_id: str,          # ID of the settings modal dialog to open
-    icon_size: int = 4,     # lucide icon size
-) -> Button:                # ghost button with sliders-horizontal icon
+    modal_id: str,                                # ID of the settings modal dialog to open
+    icon_size: IconSize = icons.ghost_button,     # lucide icon size (V11.R3 ghost-button: "full" — pairs with V1.modal_disclosure at btn-xs)
+) -> Button:                                      # ghost button with sliders-horizontal icon
     "Render a settings icon button that opens the card stack settings modal."
 ```
 

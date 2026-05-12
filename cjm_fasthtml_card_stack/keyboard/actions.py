@@ -28,10 +28,19 @@ def create_card_stack_focus_zone(
     on_focus_change: Optional[str] = None,  # JS callback name on focus change
     hidden_input_prefix: Optional[str] = None,  # Prefix for keyboard nav hidden inputs
     data_attributes: Tuple[str, ...] = (),  # Data attributes to track on focused items
+    label: Optional[str] = None,  # Human-readable label for keyboard-hints display (falls back to zone id)
 ) -> FocusZone:  # Configured focus zone for the card stack
-    """Create a focus zone for a card stack viewport."""
+    """Create a focus zone for a card stack viewport.
+
+    Set `label` to a human-readable string (e.g., "Text Segmentation") when
+    consuming via `cjm-fasthtml-keyboard-navigation` 0.0.22+'s zone-aware
+    keyboard-hints modal — the label renders as a per-zone section header
+    ("Text Segmentation — Navigation"). Without `label`, the modal falls
+    back to the raw zone id (which is technical, e.g., "sd-seg-text-cards").
+    """
     return FocusZone(
         id=ids.card_stack,
+        label=label,
         item_selector="[data-card-role='focused']",
         navigation=ScrollOnly(),
         data_attributes=data_attributes,
