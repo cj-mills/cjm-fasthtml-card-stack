@@ -8,7 +8,7 @@ __all__ = ['init_card_stack_router']
 # %% ../../nbs/routes/router.ipynb #r1000003
 from typing import Any, Callable, List, Optional, Tuple
 
-from fasthtml.common import APIRouter
+from cjm_fasthtml_app_core.core.routing import APIRouter
 
 from ..core.config import CardStackConfig
 from ..core.html_ids import CardStackHtmlIds
