@@ -16,7 +16,7 @@ pip install cjm_fasthtml_card_stack
     │   ├── controls.ipynb        # Width slider, scale slider, and card count selector components.
     │   ├── progress.ipynb        # Progress indicator showing the current position within the card stack.
     │   ├── settings_modal.ipynb  # Modal-based card stack settings with card count slider (auto toggle), width slider, and optional scale slider.
-    │   ├── states.ipynb          # Loading, empty, and placeholder card components for the card stack viewport.
+    │   ├── states.ipynb          # Loading and placeholder card components for the card stack viewport. Empty-state rendering is provided by `cjm-fasthtml-app-core`'s `render_empty_state` (V8 anatomy composition helper) &mdash; card-stack consumers wire that helper into their viewport's empty callback rather than card-stack shipping a local empty-state default.
     │   └── viewport.ipynb        # Card stack viewport with 3-section CSS Grid layout, slot rendering,
     ├── core/ (5)
     │   ├── button_ids.ipynb  # Prefix-based IDs for hidden keyboard action buttons.
@@ -70,61 +70,61 @@ graph LR
     routes_handlers[routes.handlers<br/>Handlers]
     routes_router[routes.router<br/>Router]
 
-    components_controls --> core_config
     components_controls --> core_html_ids
+    components_controls --> core_config
     components_progress --> core_html_ids
-    components_settings_modal --> core_config
     components_settings_modal --> core_html_ids
+    components_settings_modal --> core_config
     components_states --> core_html_ids
-    components_viewport --> helpers_focus
-    components_viewport --> core_models
-    components_viewport --> core_constants
-    components_viewport --> core_config
     components_viewport --> core_html_ids
+    components_viewport --> core_config
+    components_viewport --> core_models
+    components_viewport --> helpers_focus
     components_viewport --> components_states
+    components_viewport --> core_constants
     helpers_focus --> core_html_ids
-    js_auto_adjust --> core_config
-    js_auto_adjust --> core_constants
     js_auto_adjust --> core_html_ids
+    js_auto_adjust --> core_config
     js_auto_adjust --> core_models
-    js_controls --> core_config
+    js_auto_adjust --> core_constants
     js_controls --> core_constants
     js_controls --> core_html_ids
+    js_controls --> core_config
     js_controls --> core_models
-    js_core --> js_navigation
-    js_core --> core_models
     js_core --> core_constants
-    js_core --> js_viewport
-    js_core --> js_controls
-    js_core --> core_config
-    js_core --> js_scroll
-    js_core --> js_auto_adjust
     js_core --> core_html_ids
+    js_core --> core_config
+    js_core --> core_models
+    js_core --> js_scroll
+    js_core --> js_navigation
+    js_core --> js_viewport
+    js_core --> js_auto_adjust
+    js_core --> js_controls
     js_core --> js_touch
     js_core --> core_button_ids
     js_navigation --> core_button_ids
     js_scroll --> core_constants
-    js_scroll --> core_button_ids
     js_scroll --> core_html_ids
+    js_scroll --> core_button_ids
+    js_touch --> core_html_ids
     js_touch --> core_constants
     js_touch --> core_button_ids
-    js_touch --> core_html_ids
     js_viewport --> core_html_ids
-    keyboard_actions --> core_models
-    keyboard_actions --> core_config
     keyboard_actions --> core_html_ids
-    keyboard_actions --> core_button_ids
+    keyboard_actions --> core_config
+    keyboard_actions --> core_models
     keyboard_actions --> js_core
-    routes_handlers --> components_viewport
-    routes_handlers --> core_models
-    routes_handlers --> core_config
-    routes_handlers --> components_progress
+    keyboard_actions --> core_button_ids
     routes_handlers --> core_html_ids
+    routes_handlers --> core_config
+    routes_handlers --> core_models
+    routes_handlers --> components_viewport
     routes_handlers --> helpers_focus
+    routes_handlers --> components_progress
+    routes_router --> core_html_ids
+    routes_router --> core_config
     routes_router --> routes_handlers
     routes_router --> core_models
-    routes_router --> core_config
-    routes_router --> core_html_ids
 ```
 
 *55 cross-module dependencies detected*
@@ -1174,16 +1174,18 @@ def render_card_stack_settings_modal(
 
 ### States (`states.ipynb`)
 
-> Loading, empty, and placeholder card components for the card stack
-> viewport.
+> Loading and placeholder card components for the card stack viewport.
+> Empty-state rendering is provided by `cjm-fasthtml-app-core`’s
+> `render_empty_state` (V8 anatomy composition helper) — card-stack
+> consumers wire that helper into their viewport’s empty callback rather
+> than card-stack shipping a local empty-state default.
 
 #### Import
 
 ``` python
 from cjm_fasthtml_card_stack.components.states import (
     render_placeholder_card,
-    render_loading_state,
-    render_empty_state
+    render_loading_state
 )
 ```
 
@@ -1192,8 +1194,9 @@ from cjm_fasthtml_card_stack.components.states import (
 ``` python
 def render_placeholder_card(
     placeholder_type: Literal["start", "end"],  # Which edge of the list
+    show_label: bool = False,                   # Render the "Beginning"/"End" label visibly. Default hides via visibility.invisible (preserves height contract).
 ) -> Any:  # Placeholder card component
-    "Render a placeholder card for viewport edges."
+    "Render a placeholder card for viewport edges (fills geometric slot so focus position stays centered)."
 ```
 
 ``` python
@@ -1202,15 +1205,6 @@ def render_loading_state(
     message: str = "Loading...",  # Loading message text
 ) -> Any:  # Loading component
     "Render loading state with spinner and message."
-```
-
-``` python
-def render_empty_state(
-    ids: CardStackHtmlIds,  # HTML IDs for this card stack instance
-    title: str = "No items available",  # Main empty state message
-    subtitle: str = "",  # Optional subtitle text
-) -> Any:  # Empty state component
-    "Render empty state when no items exist."
 ```
 
 ### sync (`sync.ipynb`)
